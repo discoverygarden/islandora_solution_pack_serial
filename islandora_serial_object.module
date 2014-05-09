@@ -1,0 +1,66 @@
+<?php
+/**
+ * @file
+ * Hooks and callbacks for the Serial solution pack module.
+ */
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_serial_object_islandora_required_objects(IslandoraTuque $connection) {
+  $module_path = drupal_get_path('module', 'islandora_serial_object');
+  $islandora_path = drupal_get_path('module', 'islandora');
+  // Serial model.
+  $serial_content_model = $connection->repository->constructObject('islandora:serialCModel');
+  $serial_content_model->owner = 'fedoraAdmin';
+  $serial_content_model->label = 'Islandora Serial Object Content Model';
+  $serial_content_model->models = 'fedora-system:ContentModel-3.0';
+  // DS-COMPOSITE-MODEL datastream.
+  $datastream = $serial_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_serial_object_ds_composite_model.xml", FALSE);
+  $serial_content_model->ingestDatastream($datastream);
+
+  // Intermediate content model.
+  $intermediate_content_model = $connection->repository->constructObject('islandora:intermediateCModel');
+  $intermediate_content_model->owner = 'fedoraAdmin';
+  $intermediate_content_model->label = 'Islandora Serial Object Intermediate Content Model';
+  $intermediate_content_model->models = 'fedora-system:ContentModel-3.0';
+  // DS-COMPOSITE-MODEL datastream.
+  $datastream = $intermediate_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/content_models/islandora_serial_object_intermediate_ds_composite_model.xml", FALSE);
+  $intermediate_content_model->ingestDatastream($datastream);
+
+  // Serial collection.
+  $serial_collection = $connection->repository->constructObject('islandora:serial_collection');
+  $serial_collection->owner = 'fedoraAdmin';
+  $serial_collection->label = 'Serial Collection';
+  $serial_collection->models = 'islandora:collectionCModel';
+  $serial_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+  // Collection policy datastream.
+  $datastream = $serial_collection->constructDatastream('COLLECTION_POLICY', 'X');
+  $datastream->label = 'Collection policy';
+  $datastream->mimetype = 'text/xml';
+  $datastream->setContentFromFile("$module_path/xml/collection/islandora_serial_object_collection_policy.xml", FALSE);
+  $serial_collection->ingestDatastream($datastream);
+  // TN datastream.
+  $datastream = $serial_collection->constructDatastream('TN', 'M');
+  $datastream->label = 'Thumbnail';
+  $datastream->mimetype = 'image/png';
+  $datastream->setContentFromFile("$islandora_path/images/folder.png", FALSE);
+  $serial_collection->ingestDatastream($datastream);
+
+  return array(
+    'islandora_serial_object' => array(
+      'title' => 'Islandora Serial',
+      'objects' => array(
+        $serial_content_model,
+        $intermediate_content_model,
+        $serial_collection,
+      ),
+    ),
+  );
+}

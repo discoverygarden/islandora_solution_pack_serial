@@ -1,0 +1,23 @@
+<?php
+/**
+ * @file
+ * Houses the install and uninstall hooks for the serial solution pack.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * @see islandora_serial_object_islandora_required_objects()
+ */
+function islandora_serial_object_install() {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  islandora_install_solution_pack('islandora_serial_object');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_serial_object_uninstall() {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  islandora_install_solution_pack('islandora_serial_object', 'uninstall');
+}

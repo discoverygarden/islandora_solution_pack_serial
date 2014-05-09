@@ -1,0 +1,10 @@
+<collection_policy xmlns="http://www.islandora.ca" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Islandora Serial Object" xsi:schemaLocation="http://www.islandora.ca">
+    <content_models>
+        <content_model name="Islandora Collection Content Model" dsid="ISLANDORACM" namespace="islandora" pid="islandora:collectionCModel"/>
+        <content_model name="Islandora Serial Object Content Model" dsid="ISLANDORACM" namespace="islandora" pid="islandora:serialCModel"/>
+        <content_model name="Islandora Serial Object Intermediate Content Model" dsid="ISLANDORACM" namespace="islandora" pid="islandora:intermediateCModel"/>
+    </content_models>
+    <search_terms></search_terms>
+    <staging_area></staging_area>
+    <relationship>isMemberOfCollection</relationship>
+</collection_policy>

@@ -1,0 +1,7 @@
+name = "Islandora Serial Solution Pack"
+description = "A default Islandora module to handle serial objects"
+dependencies[] = islandora
+package = Islandora Solution Packs
+version = 7.x-dev
+core = 7.x
+configure = admin/islandora/solution_pack_config/serial
