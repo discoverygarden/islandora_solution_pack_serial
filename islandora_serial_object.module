@@ -68,7 +68,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
 /**
  * Implements hook_islandora_xml_form_builder_form_associations().
  */
-function islandora_serial_object_islandora_xml_form_builder_form_associations() {
+/*function islandora_serial_object_islandora_xml_form_builder_form_associations() {
   return array(
     'islandora_serial_object_mods_form' => array(
       'content_model' => 'islandora:rootSerialCModel',
@@ -84,7 +84,7 @@ function islandora_serial_object_islandora_xml_form_builder_form_associations() 
       'template' => FALSE,
     ),
   );
-}
+}*/
 
 /**
  * Implements hook_islandora_xml_form_builder_forms().
@@ -106,9 +106,10 @@ function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_ste
     'islandora_serial_object' => array(
       'weight' => 10,
       'type' => 'form',
-      'form_id' => 'islandora_serial_object_add_intermediate_form',
+      'form_id' => 'islandora_serial_object_manage_intermediates_form',
+      'args' => array('ingest'),
       'module' => 'islandora_serial_object',
-      'file' => 'includes/ingest.form.inc',
+      'file' => 'includes/manage.inc',
     ),
   );
 }

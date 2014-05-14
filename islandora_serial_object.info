@@ -5,3 +5,4 @@ package = Islandora Solution Packs
 version = 7.x-dev
 core = 7.x
 configure = admin/islandora/solution_pack_config/serial
+stylesheets[all][] = css/islandora_serial_object.css
