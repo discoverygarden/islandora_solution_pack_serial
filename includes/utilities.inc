@@ -90,3 +90,69 @@ function islandora_serial_object_sort_get_depth($pid, $intermediates, &$depth = 
     return $depth;
   }
 }
+
+/**
+ * Retrieve all children recursively.
+ *
+ * @param string $parent_pid
+ *   The PID of the object to find the children of.
+ */
+function islandora_serial_object_get_children($parent_pid) {
+  $tuque = islandora_get_tuque_connection();
+  $query = '
+    PREFIX fedora-rels-ext: <' . FEDORA_RELS_EXT_URI . ">
+    SELECT ?object ?parent
+    FROM <#ri>
+    WHERE {
+      ?object <fedora-rels-ext:isMemberOf> ?parent .
+      ?object <fedora-rels-ext:isMemberOf>+ <info:fedora/$parent_pid> .
+      FILTER (!sameTerm(?object, <info:fedora/$parent_pid>))
+    }
+  ";
+  $raw_results = $tuque->repository->ri->sparqlQuery($query);
+  $flat_structure = array();
+  foreach ($raw_results as $result) {
+    $flat_structure[] = array(
+      'object' => $result['object']['value'],
+      'parent' => $result['parent']['value'],
+    );
+  }
+  $processed_results = islandora_serial_object_build_tree($flat_structure, $parent_pid);
+  return $processed_results;
+}
+
+/**
+ * Turn a flat array structure of objects into a tree.
+ *
+ * @param array $flat_structure
+ *   An array of arrays containing:
+ *    -object: A string of the current object's PID.
+ *    -parent: a string of the parent's PID.
+ * @param string $root
+ *   The root PID to build the tree for.
+ */
+function islandora_serial_object_build_tree($flat_structure, $root) {
+  $tree = array();
+  $branches = array();
+  foreach ($flat_structure as $result) {
+    if ($result['parent'] == $root) {
+      $child = islandora_serial_object_build_tree(
+        $flat_structure,
+        $result['object']
+      );
+      if (is_array($child)) {
+        $branches = $branches + $child;
+      }
+      else {
+        $branches[] = $child;
+      }
+    }
+  }
+  if ($branches) {
+    $tree[$root] = $branches;
+  }
+  else {
+    $tree = $root;
+  }
+  return $tree;
+}
