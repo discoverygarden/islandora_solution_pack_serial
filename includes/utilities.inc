@@ -52,7 +52,7 @@ function islandora_serial_object_build_intermediates(&$form, &$form_state, $type
  *   A sorted array in the form described above.
  */
 function islandora_serial_object_sort_intermediates($intermediates) {
-  islandora_serial_object_get_tree($intermediates['intermediates'], 0);
+  islandora_serial_object_get_tree_for_form($intermediates['intermediates'], 0);
   return $intermediates;
 }
 
@@ -78,12 +78,12 @@ function islandora_serial_object_sort_intermediates($intermediates) {
  * @param int $depth
  *   The depth of the current child, used for indentation.
  */
-function islandora_serial_object_get_tree(&$children, $parent_id, $depth = 0) {
+function islandora_serial_object_get_tree_for_form(&$children, $parent_id, $depth = 0) {
   if (isset($children[$parent_id])) {
     uasort($children[$parent_id], 'islandora_serial_object_stable_drupal_sort_weight');
     foreach ($children[$parent_id] as &$child) {
       $child['depth'] = $depth;
-      islandora_serial_object_get_tree($children, $child['id'], $depth + 1);
+      islandora_serial_object_get_tree_for_form($children, $child['id'], $depth + 1);
     }
   }
 }
@@ -95,7 +95,7 @@ function islandora_serial_object_get_tree(&$children, $parent_id, $depth = 0) {
  *   A reference to an array containing a Drupal form.
  * @param array $children
  *   An array of associative arrays where the key is the pid
- *   (parent id) of the intermediate. They key of Each associative array is the
+ *   (parent id) of the intermediate. They key of each associative array is the
  *   id of the intermediate and contains:
  *     -title: A string describing the object.
  *     -volume: A string identifying the volume.
@@ -206,4 +206,61 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
     $sort_weight = $a['id'] < $b['id'] ? -1 : 1;
   }
   return $sort_weight;
+}
+
+/**
+ * Munges the intermediates into a more treelike structure.
+ *
+ * @param array $intermediates
+ *   An array of associative arrays where the key is the pid
+ *   (parent id) of the intermediate. They key of each associative array is the
+ *   id of the intermediate and contains:
+ *     -title: A string describing the object.
+ *     -volume: A string identifying the volume.
+ *     -issue: A string identifying the issue.
+ *     -year: A string identifying the year.
+ *     -pid: A string that stores reference to which parent the intermediate is
+ *     part of.
+ *     -id: A unique string used for identification.
+ *     -weight: A string referencing how far down in the order the intermediate
+ *     is.
+ *     -depth: A string describing how far "indented" the object is.
+ *
+ * @param string $root_pid
+ *   The PID of the root serial object.
+ *
+ * @return array
+ *   The tree structure of serial an intermediate objects to set. An array of
+ *   arrays where the key is the root serial object pid. Each array is an
+ *   an array containing:
+ *     - children: An array containing:
+ *       - children: An array like this one (recursion)
+ *       - title: A string of a MODS title.
+ *       - volume: A string representing the volume for MODS.
+ *       - issue: A string representing the issue for MODS.
+ *       - year: A string representing the year for MODS.
+ */
+function islandora_serial_object_get_intermediates_as_tree($intermediates, $root_pid) {
+  // Set the root pid value first.
+  $parent_map = array();
+  $parents = array();
+  $parents =& $intermediates[0];
+
+  foreach ($intermediates as &$root) {
+    foreach ($root as &$child) {
+      $parent_map[$child['id']] =& $child;
+      $parent_map[$child['id']]['children'] = array();
+      if ($child['pid'] > 0) {
+        $parent_map[$child['pid']]['children'][] = $child;
+      }
+    }
+    unset($child);
+  }
+  unset($root);
+  $tree = array(
+    $root_pid => array(
+      'children' => $parents,
+    ),
+  );
+  return $tree;
 }
