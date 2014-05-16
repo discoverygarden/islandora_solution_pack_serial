@@ -189,6 +189,7 @@ EOXML;
     $object->ingestDatastream($mods_datastream);
   }
   if ($object_is_new) {
+    $object->models = 'islandora:intermediateCModel';
     $object->label = $object_info['title'];
     islandora_add_object($object);
   }
