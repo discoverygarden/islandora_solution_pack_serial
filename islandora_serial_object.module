@@ -4,6 +4,21 @@
  * Hooks and callbacks for the Serial solution pack module.
  */
 
+// Predicates.
+define('ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE', 'sequence_position');
+
+// MODS xpaths for intermediate management interface.
+define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH', '/mods:mods/mods:titleInfo[1]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:title');
+// Always use first values because we can only use one.
+define('ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:partNumber[1]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_ISSUE_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:partName[1]');
+// Date is stored as a range, loss of granularity is possible if modifying
+// through management interface is enabled.
+define('ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH', '/mods:mods/mods:originInfo[1]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_YEAR_START_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH . '/mods:dateIssued[@point=\'start\']');
+define('ISLANDORA_SERIAL_OBJECT_MODS_YEAR_END_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH . '/mods:dateIssued[@point=\'end\']');
+
 /**
  * Implements hook_islandora_required_objects().
  */
