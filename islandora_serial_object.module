@@ -4,6 +4,21 @@
  * Hooks and callbacks for the Serial solution pack module.
  */
 
+// Predicates.
+define('ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE', 'sequence_position');
+
+// MODS xpaths for intermediate management interface.
+define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH', '/mods:mods/mods:titleInfo[1]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:title');
+// Always use first values because we can only use one.
+define('ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:partNumber[1]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_ISSUE_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:partName[1]');
+// Date is stored as a range, loss of granularity is possible if modifying
+// through management interface is enabled.
+define('ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH', '/mods:mods/mods:originInfo[1]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_YEAR_START_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH . '/mods:dateIssued[@point=\'start\']');
+define('ISLANDORA_SERIAL_OBJECT_MODS_YEAR_END_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH . '/mods:dateIssued[@point=\'end\']');
+
 /**
  * Implements hook_islandora_required_objects().
  */
@@ -11,7 +26,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
   $module_path = drupal_get_path('module', 'islandora_serial_object');
   $islandora_path = drupal_get_path('module', 'islandora');
   // Serial model.
-  $serial_content_model = $connection->repository->constructObject('islandora:serialCModel');
+  $serial_content_model = $connection->repository->constructObject('islandora:rootSerialCModel');
   $serial_content_model->owner = 'fedoraAdmin';
   $serial_content_model->label = 'Islandora Serial Object Content Model';
   $serial_content_model->models = 'fedora-system:ContentModel-3.0';
@@ -23,7 +38,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
   $serial_content_model->ingestDatastream($datastream);
 
   // Intermediate content model.
-  $intermediate_content_model = $connection->repository->constructObject('islandora:intermediateCModel');
+  $intermediate_content_model = $connection->repository->constructObject('islandora:intermediateSerialCModel');
   $intermediate_content_model->owner = 'fedoraAdmin';
   $intermediate_content_model->label = 'Islandora Serial Object Intermediate Content Model';
   $intermediate_content_model->models = 'fedora-system:ContentModel-3.0';
@@ -61,6 +76,67 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
         $intermediate_content_model,
         $serial_collection,
       ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_form_associations().
+ */
+function islandora_serial_object_islandora_xml_form_builder_form_associations() {
+  return array(
+    'islandora_serial_object_mods_form' => array(
+      'content_model' => 'islandora:rootSerialCModel',
+      'form_name' => 'Islandora Serial Object MODS form',
+      'dsid' => 'MODS',
+      'title_field' => array(
+        'titleInfoTab',
+        'titleInfoPanel',
+        'titleInfo',
+        'title',
+      ),
+      'transform' => 'mods_to_dc.xsl',
+      'template' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_xml_form_builder_forms().
+ */
+function islandora_serial_object_islandora_xml_form_builder_forms() {
+  $module_path = drupal_get_path('module', 'islandora_serial_object');
+  return array(
+    'Islandora Serial Object MODS form' => array(
+      'form_file' => "$module_path/xml/forms/islandora_serial_object_form_mods.xml",
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_steps() {
+  return array(
+    'islandora_serial_object' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_serial_object_manage_intermediates_form',
+      'args' => array('ingest'),
+      'module' => 'islandora_serial_object',
+      'file' => 'includes/manage.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function islandora_serial_object_theme($existing, $type, $theme, $path) {
+  return array(
+    'islandora_serial_object_intermediates_table' => array(
+      'render element' => 'form',
+      'file' => 'theme/theme.inc',
     ),
   );
 }
