@@ -1,5 +1,5 @@
 name = "Islandora Serial Solution Pack"
-description = "A default Islandora module to handle serial objects"
+description = "A simple Islandora solution pack to collate serial publications"
 dependencies[] = islandora
 package = Islandora Solution Packs
 version = 7.x-dev
