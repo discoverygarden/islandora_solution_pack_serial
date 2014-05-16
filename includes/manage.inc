@@ -164,6 +164,7 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
   if (isset($form_state['islandora_serial_object_intermediates'])) {
     module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
     module_load_include('inc', 'islandora_serial_object', 'includes/serial_tree.batch');
+    // @TODO: Grab object depending on "type" as above.
     $object = islandora_ingest_form_get_object($form_state);
     $filtered_children = $form_state['islandora_serial_object_intermediates']['intermediates'];
     foreach ($form_state['islandora_serial_object_intermediates']['intermediates'] as $parent_id => $children) {
