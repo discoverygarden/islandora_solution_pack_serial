@@ -151,14 +151,10 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
       }
     }
   }
-  form_set_error('gdasjkgdsa');
-  $object = islandora_ingest_form_get_object($form_state);
-  $flat_structure = islandora_serial_object_get_intermediates_as_tree($form_state['islandora_serial_object_intermediates']['intermediates'], $object->id);
-  dsm($flat_structure, 'flat');
 }
 
 /**
- * Validation for the manage intermediates form.
+ * Submit handler for the manage intermediates form.
  *
  * @param array $form
  *   An array representing a form in Drupal.
@@ -179,6 +175,14 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
     $model = $models[reset($shared_storage['models'])];
     $namespace = $model['namespace'];
     $object->id = $object->repository->getNextIdentifier($namespace, variable_get('islandora_basic_collection_generate_uuid', FALSE));
-    $flat_structure = islandora_serial_object_get_intermediates_as_tree($form_state['islandora_serial_object_intermediates']['intermediates'], $object->id);
+    $filtered_children = $form_state['islandora_serial_object_intermediates']['intermediates'];
+    foreach ($form_state['islandora_serial_object_intermediates']['intermediates'] as $parent_id => $children) {
+      foreach ($children as $id => $child) {
+        if (empty($child['title']) && empty($child['volume']) && empty($child['issue']) && empty($child['year'])) {
+          unset($filtered_children[$parent_id][$id]);
+        }
+      }
+    }
+    $flat_structure = islandora_serial_object_get_intermediates_as_tree($filtered_children, $object->id);
   }
 }
