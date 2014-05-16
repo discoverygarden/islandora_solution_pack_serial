@@ -230,11 +230,11 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
  *   The PID of the root serial object.
  *
  * @return array
- *   The tree structure of serial an intermediate objects to set. An array of
+ *   The tree structure of the serial intermediate objects to set. An array of
  *   arrays where the key is the root serial object pid. Each array is an
  *   an array containing:
  *     - children: An array containing:
- *       - children: An array like this one (recursion)
+ *       - children: An array like this one (recursion).
  *       - title: A string of a MODS title.
  *       - volume: A string representing the volume for MODS.
  *       - issue: A string representing the issue for MODS.
@@ -262,6 +262,7 @@ function islandora_serial_object_get_intermediates_as_tree($intermediates, $root
       'children' => $parents,
     ),
   );
+  return $tree;
 }
 
 /**
@@ -269,6 +270,8 @@ function islandora_serial_object_get_intermediates_as_tree($intermediates, $root
  *
  * @param string $parent_pid
  *   The PID of the object to find the children of.
+ *
+ * @return array
  */
 function islandora_serial_object_get_children($parent_pid) {
   $tuque = islandora_get_tuque_connection();
@@ -303,6 +306,9 @@ function islandora_serial_object_get_children($parent_pid) {
  *    -parent: a string of the parent's PID.
  * @param string $root
  *   The root PID to build the tree for.
+ *
+ * @return array
+ *
  */
 function islandora_serial_object_build_tree($flat_structure, $root) {
   $tree = array();

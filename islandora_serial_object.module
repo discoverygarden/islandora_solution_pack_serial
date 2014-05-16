@@ -83,7 +83,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
 /**
  * Implements hook_islandora_xml_form_builder_form_associations().
  */
-/*function islandora_serial_object_islandora_xml_form_builder_form_associations() {
+function islandora_serial_object_islandora_xml_form_builder_form_associations() {
   return array(
     'islandora_serial_object_mods_form' => array(
       'content_model' => 'islandora:rootSerialCModel',
@@ -99,7 +99,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
       'template' => FALSE,
     ),
   );
-}*/
+}
 
 /**
  * Implements hook_islandora_xml_form_builder_forms().

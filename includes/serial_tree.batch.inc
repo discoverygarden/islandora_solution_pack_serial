@@ -8,18 +8,20 @@
  * Runs a batch to set the serial objects in a tree structure.
  *
  * @param array $object_tree
- *   The tree structure of serial an intermediate objects to set.
- *   - root_value
- *     - children
- *       - top level child
- *         - children: An array like this one (recursion)
- *         - title: A string of a MODS title.
- *         - volume: A string representing the volume for MODS.
- *         - issue: A string representing the issue for MODS.
- *         - year: A string representing the year for MODS.
+ *   The tree structure of the serial intermediate objects to set. An array of
+ *   arrays where the key is the root serial object pid. Each array is an
+ *   an array containing:
+ *     - children: An array containing:
+ *       - children: An array like this one (recursion).
+ *       - title: A string of a MODS title.
+ *       - volume: A string representing the volume for MODS.
+ *       - issue: A string representing the issue for MODS.
+ *       - year: A string representing the year for MODS.
+ * @param bool $ingest
+ *   Whether this batch is running at ingest time or not.
  */
-function islandora_serial_object_serial_batch($object_tree) {
-  $operations = islandora_serial_object_serial_batch_generate_ops($object_tree);
+function islandora_serial_object_serial_batch($object_tree, $ingest) {
+  $operations = islandora_serial_object_serial_batch_generate_ops($object_tree, $ingest);
   if (!empty($operations)) {
     batch_set(
       array(
@@ -45,15 +47,23 @@ function islandora_serial_object_serial_batch($object_tree) {
  *   The current object's PID.
  * @param array $object_info
  *   An array of information about the current object.
+ * @param bool $ingest
+ *   Whether this batch is running at ingest time or not.
  * @param array $context
  *   The context of the current batch operation.
  */
-function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object_info, &$context) {
+function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object_info, $ingest, &$context) {
   module_load_include('inc', 'islandora', 'includes/utilities');
   // Handle sandbox setup on first op.
   if (!isset($context['sandbox']['tree_ids_to_pids'])) {
     $context['sandbox']['tree_ids_to_pids'] = array();
     $context['sandbox']['tree_ids_to_pids'][$parent_id] = $parent_id;
+  }
+  // Workaround for http://drupal.org/node/1300928.
+  // If the batch op runs first, then by the time the ingest form submit handler
+  // gets called, its code is out of scope.
+  if ($ingest && $context['finished'] >= 1) {
+    module_load_include('inc', 'islandora', 'includes/ingest.form');
   }
   $parent_pid = $context['sandbox']['tree_ids_to_pids'][$parent_id];
   // If current object isn't created create it.
@@ -175,31 +185,37 @@ EOXML;
   // Ingest if necessary.
   if ($mods_datastream_is_new) {
     $mods_datastream->label = 'MODS Metadata';
-    $datastream->mimetype = 'text/xml';
+    $mods_datastream->mimetype = 'text/xml';
     $object->ingestDatastream($mods_datastream);
   }
   if ($object_is_new) {
+    $object->label = $object_info['title'];
     islandora_add_object($object);
   }
 }
 
 /**
- * Recursivly map the tree generating the batch operations.
+ * Recursively map the tree generating the batch operations.
  *
  * @param array $object_tree
- *   The tree to build the objects for following the array structure:
- *   - root_value
- *     - children
- *       - top level child
- *         - children: An array like this one (recursion)
- *         - title: A string of a MODS title.
- *         - volume: A string representing the volume for MODS.
- *         - issue: A string representing the issue for MODS.
- *         - year: A string representing the year for MODS.
- * @param string $parent_pid
- *   The current parent PID of the tree.
+ *   The tree structure of the serial intermediate objects to set. An array of
+ *   arrays where the key is the root serial object pid. Each array is an
+ *   an array containing:
+ *     - children: An array containing:
+ *       - children: An array like this one (recursion).
+ *       - title: A string of a MODS title.
+ *       - volume: A string representing the volume for MODS.
+ *       - issue: A string representing the issue for MODS.
+ *       - year: A string representing the year for MODS.
+ * @param bool $ingest
+ *   Whether this batch is running at ingest time or not.
+ * @param NULL|string $parent_pid
+ *   The current parent PID of the tree or NULL if it's the root object.
+ *
+ * @return array
+ *   An array describing the operations for the batch.
  */
-function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent_pid = NULL) {
+function islandora_serial_object_serial_batch_generate_ops($object_tree, $ingest, $parent_pid = NULL) {
   $operations = array();
   $sequence_number = 1;
   foreach ($object_tree as $object_pid => $object_info) {
@@ -215,7 +231,7 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent
     if (!is_null($parent_pid)) {
       $operations[] = array(
         'islandora_serial_object_serial_batch_op',
-        array($parent_pid, $object_pid, $object_info),
+        array($parent_pid, $object_pid, $object_info, $ingest),
       );
     }
     else {
@@ -224,7 +240,7 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent
     if (!empty($children) && is_array($children)) {
       $operations = array_merge(
         $operations,
-        islandora_serial_object_serial_batch_generate_ops($children, $parent_pid)
+        islandora_serial_object_serial_batch_generate_ops($children, $ingest, $parent_pid)
       );
     }
     ++$sequence_number;
