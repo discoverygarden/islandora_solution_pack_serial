@@ -271,7 +271,9 @@ function islandora_serial_object_get_intermediates_as_tree($intermediates, $root
  * @param string $parent_pid
  *   The PID of the object to find the children of.
  *
- * @return array
+ * @return string|array
+ *   A string of the root if there are no children.
+ *   An array containing a tree of PIDs, where leaves are strings.
  */
 function islandora_serial_object_get_children($parent_pid) {
   $tuque = islandora_get_tuque_connection();
@@ -307,8 +309,9 @@ function islandora_serial_object_get_children($parent_pid) {
  * @param string $root
  *   The root PID to build the tree for.
  *
- * @return array
- *
+ * @return string|array
+ *   A string of the root if there are no children.
+ *   An array containing a tree of PIDs, where leaves are strings.
  */
 function islandora_serial_object_build_tree($flat_structure, $root) {
   $tree = array();

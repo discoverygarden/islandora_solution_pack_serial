@@ -105,7 +105,7 @@ EOXML;
     $mods_doc->loadXML($object['MODS']->content);
     $mods_xpath = new DOMXPath($mods_doc);
     $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-    // Remove MDOS data if necessary.
+    // Remove MODS data if necessary.
     $xpaths_to_remove = array(
       ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH,
       ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH,
