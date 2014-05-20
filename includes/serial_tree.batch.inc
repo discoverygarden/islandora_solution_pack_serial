@@ -17,11 +17,10 @@
  *       - volume: A string representing the volume for MODS.
  *       - issue: A string representing the issue for MODS.
  *       - year: A string representing the year for MODS.
- * @param bool $ingest
- *   Whether this batch is running at ingest time or not.
  */
-function islandora_serial_object_serial_batch($object_tree, $ingest) {
-  $operations = islandora_serial_object_serial_batch_generate_ops($object_tree, $ingest);
+function islandora_serial_object_serial_batch($object_tree) {
+
+  $operations = islandora_serial_object_serial_batch_generate_ops($object_tree);
   if (!empty($operations)) {
     batch_set(
       array(
@@ -47,25 +46,22 @@ function islandora_serial_object_serial_batch($object_tree, $ingest) {
  *   The current object's PID.
  * @param array $object_info
  *   An array of information about the current object.
- * @param bool $ingest
- *   Whether this batch is running at ingest time or not.
  * @param array $context
  *   The context of the current batch operation.
  */
-function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object_info, $ingest, &$context) {
+function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object_info, &$context) {
   module_load_include('inc', 'islandora', 'includes/utilities');
-  // Handle sandbox setup on first op.
-  if (!isset($context['sandbox']['tree_ids_to_pids'])) {
-    $context['sandbox']['tree_ids_to_pids'] = array();
-    $context['sandbox']['tree_ids_to_pids'][$parent_id] = $parent_id;
+  // Handle results setup on first op.
+  if (!isset($context['results']['tree_ids_to_pids'])) {
+    $context['results']['tree_ids_to_pids'] = array();
+    $context['results']['tree_ids_to_pids'][$parent_id] = $parent_id;
   }
   // Workaround for http://drupal.org/node/1300928.
   // If the batch op runs first, then by the time the ingest form submit handler
   // gets called, its code is out of scope.
-  if ($ingest && $context['finished'] >= 1) {
-    module_load_include('inc', 'islandora', 'includes/ingest.form');
-  }
-  $parent_pid = $context['sandbox']['tree_ids_to_pids'][$parent_id];
+  module_load_include('inc', 'islandora', 'includes/ingest.form');
+
+  $parent_pid = $context['results']['tree_ids_to_pids'][$parent_id];
   // If current object isn't created create it.
   if (islandora_is_valid_pid($object_id)) {
     $object = islandora_object_load($object_id);
@@ -80,7 +76,7 @@ function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object
     $object = $tuque->repository->constructObject($object_pid);
     $object_is_new = TRUE;
   }
-  $context['sandbox']['tree_ids_to_pids'][$object_id] = $object->id;
+  $context['results']['tree_ids_to_pids'][$object_id] = $object->id;
 
   // If the MODS datastream isn't created create it.
   $mods_datastream_is_new = FALSE;
@@ -208,15 +204,13 @@ EOXML;
  *       - volume: A string representing the volume for MODS.
  *       - issue: A string representing the issue for MODS.
  *       - year: A string representing the year for MODS.
- * @param bool $ingest
- *   Whether this batch is running at ingest time or not.
  * @param NULL|string $parent_pid
  *   The current parent PID of the tree or NULL if it's the root object.
  *
  * @return array
  *   An array describing the operations for the batch.
  */
-function islandora_serial_object_serial_batch_generate_ops($object_tree, $ingest, $parent_pid = NULL) {
+function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent_pid = NULL) {
   $operations = array();
   $sequence_number = 1;
   foreach ($object_tree as $object_pid => $object_info) {
@@ -232,16 +226,14 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $ingest
     if (!is_null($parent_pid)) {
       $operations[] = array(
         'islandora_serial_object_serial_batch_op',
-        array($parent_pid, $object_pid, $object_info, $ingest),
+        array($parent_pid, $object_pid, $object_info),
       );
     }
-    else {
-      $parent_pid = $object_pid;
-    }
+    $parent_pid = $object_pid;
     if (!empty($children) && is_array($children)) {
       $operations = array_merge(
         $operations,
-        islandora_serial_object_serial_batch_generate_ops($children, $ingest, $parent_pid)
+        islandora_serial_object_serial_batch_generate_ops($children, $parent_pid)
       );
     }
     ++$sequence_number;
