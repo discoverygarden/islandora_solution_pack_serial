@@ -229,9 +229,7 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent
         array($parent_pid, $object_pid, $object_info),
       );
     }
-    else {
-      $parent_pid = $object_pid;
-    }
+    $parent_pid = $object_pid;
     if (!empty($children) && is_array($children)) {
       $operations = array_merge(
         $operations,
