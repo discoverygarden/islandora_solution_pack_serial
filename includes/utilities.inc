@@ -351,7 +351,8 @@ function islandora_serial_object_build_tree($flat_structure, $root) {
 function islandora_serial_object_is_leaf(AbstractObject $object) {
   $leaf_query = <<<EOQ
 SELECT ?child from <#RI> WHERE {
-  ?child <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}>
+  ?child <fedora-rels-ext:isMemberOf> <info:fedora/{$object->id}> ;
+         <fedora-model:hasModel> <info:fedora/islandora:intermediateCModel>
 }
 EOQ;
   return !($object->repository->ri->countQuery($leaf_query, 'sparql'));

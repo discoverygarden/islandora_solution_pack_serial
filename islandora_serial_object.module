@@ -226,7 +226,7 @@ function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps(array $
           'args' => array($shared_storage['islandora_serial_object_intermediate_pdf_parent']),
         ),
         'undo_function' => array(
-          'function' => 'islandora_xacml_editor_unassociate_pdf',
+          'function' => 'islandora_serial_object_unassociate_pdf',
           'args' => array(),
         ),
         'file' => 'includes/pdf.form.inc',
