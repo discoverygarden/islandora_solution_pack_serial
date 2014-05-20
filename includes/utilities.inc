@@ -278,16 +278,14 @@ function islandora_serial_object_get_intermediates_as_tree($intermediates, $root
 function islandora_serial_object_get_children($parent_pid) {
   $tuque = islandora_get_tuque_connection();
   $query = '
-    PREFIX fedora-rels-ext: <' . FEDORA_RELS_EXT_URI . ">
-    SELECT ?object ?parent
-    FROM <#ri>
-    WHERE {
-      ?object <fedora-rels-ext:isMemberOf> ?parent .
-      ?object <fedora-rels-ext:isMemberOf>+ <info:fedora/$parent_pid> .
-      FILTER (!sameTerm(?object, <info:fedora/$parent_pid>))
-    }
-  ";
-  $raw_results = $tuque->repository->ri->sparqlQuery($query);
+    select $object $parent from <#ri>
+    where (
+      walk(
+        $object <fedora-rels-ext:isMemberOf> <info:fedora/' . $parent_pid . '>
+        and $object <fedora-rels-ext:isMemberOf> $parent)
+    )
+  ';
+  $raw_results = $tuque->repository->ri->itqlQuery($query);
   $flat_structure = array();
   foreach ($raw_results as $result) {
     $flat_structure[] = array(
