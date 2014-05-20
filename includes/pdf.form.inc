@@ -58,16 +58,15 @@ function islandora_serial_object_associate_pdf(&$form_state, $parent_id) {
   }
 EOQ;
   $sequence_number = $object->repository->ri->countQuery($sequence_query, 'sparql') + 1;
-  $object->relationships->autoCommit = FALSE;
   $object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isConstituentOf', $parent_id);
   // Need to remove the existing collection relationship.
   $object->relationships->remove(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:sp_pdf_collection');
-  $object->relationships->add(ISLANDORA_RELS_EXT_URI,
+  $object->relationships->add(
+    ISLANDORA_RELS_EXT_URI,
     ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE,
     $sequence_number,
     RELS_TYPE_PLAIN_LITERAL
   );
-  $object->relationships->commitRelationships();
   $form_state['redirect'] = "islandora/object/$parent_id/manage/serial-pdf-management";
 }
 
@@ -79,11 +78,9 @@ EOQ;
  */
 function islandora_serial_object_unassociate_pdf(&$form_state) {
   $object = islandora_ingest_form_get_object($form_state);
-  $object->relationships->autoCommit = FALSE;
   $object->relationships->remove(ISLANDORA_RELS_EXT_URI, 'isConstituentOf');
   $object->relationships->remove(
     ISLANDORA_RELS_EXT_URI,
     ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE
   );
-  $object->relationships->commitRelationships();
 }

@@ -183,7 +183,7 @@ function islandora_serial_object_menu() {
  */
 function islandora_serial_object_pdf_management_access(AbstractObject $object) {
   module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
-  return in_array('islandora:intermediateCModel', $object->models) && user_access(ISLANDORA_SERIAL_OBJECT_MANAGEMENT_PERMISSION) && islandora_serial_object_is_leaf($object);
+  return in_array('islandora:intermediateCModel', $object->models) && islandora_object_access(ISLANDORA_SERIAL_OBJECT_MANAGEMENT_PERMISSION, $object) && islandora_serial_object_is_leaf($object);
 }
 
 /**
@@ -196,7 +196,7 @@ function islandora_serial_object_pdf_management_access(AbstractObject $object) {
  *   TRUE if the user has access, FALSE otherwise.
  */
 function islandora_serial_object_pdf_ingest_access(AbstractObject $object) {
-  return islandora_serial_object_pdf_management_access($object) && user_access(ISLANDORA_INGEST);
+  return islandora_serial_object_pdf_management_access($object) && islandora_object_access(ISLANDORA_INGEST, $object);
 }
 
 /**
