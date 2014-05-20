@@ -51,17 +51,17 @@ function islandora_serial_object_serial_batch($object_tree) {
  */
 function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object_info, &$context) {
   module_load_include('inc', 'islandora', 'includes/utilities');
-  // Handle sandbox setup on first op.
-  if (!isset($context['sandbox']['tree_ids_to_pids'])) {
-    $context['sandbox']['tree_ids_to_pids'] = array();
-    $context['sandbox']['tree_ids_to_pids'][$parent_id] = $parent_id;
+  // Handle results setup on first op.
+  if (!isset($context['results']['tree_ids_to_pids'])) {
+    $context['results']['tree_ids_to_pids'] = array();
+    $context['results']['tree_ids_to_pids'][$parent_id] = $parent_id;
   }
   // Workaround for http://drupal.org/node/1300928.
   // If the batch op runs first, then by the time the ingest form submit handler
   // gets called, its code is out of scope.
   module_load_include('inc', 'islandora', 'includes/ingest.form');
 
-  $parent_pid = $context['sandbox']['tree_ids_to_pids'][$parent_id];
+  $parent_pid = $context['results']['tree_ids_to_pids'][$parent_id];
   // If current object isn't created create it.
   if (islandora_is_valid_pid($object_id)) {
     $object = islandora_object_load($object_id);
@@ -76,7 +76,7 @@ function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object
     $object = $tuque->repository->constructObject($object_pid);
     $object_is_new = TRUE;
   }
-  $context['sandbox']['tree_ids_to_pids'][$object_id] = $object->id;
+  $context['results']['tree_ids_to_pids'][$object_id] = $object->id;
 
   // If the MODS datastream isn't created create it.
   $mods_datastream_is_new = FALSE;
