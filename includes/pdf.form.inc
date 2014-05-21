@@ -50,14 +50,9 @@ function islandora_serial_object_ingest_pdf_page_callback(AbstractObject $object
  *   The parent id of the intermediate serial object.
  */
 function islandora_serial_object_associate_pdf(&$form_state, $parent_id) {
+  module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
   $object = islandora_ingest_form_get_object($form_state);
-  // Need to append the sequence of this PDF to the end by default.
-  $sequence_query = <<<EOQ
-  SELECT ?child FROM <#ri> WHERE {
-    ?child <http://islandora.ca/ontology/relsext#isConstituentOf> <info:fedora/{$parent_id}>
-  }
-EOQ;
-  $sequence_number = $object->repository->ri->countQuery($sequence_query, 'sparql') + 1;
+  $sequence_number = islandora_serial_object_get_max_sequence_number($parent_id) + 1;
   $object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isConstituentOf', $parent_id);
   // Need to remove the existing collection relationship.
   $object->relationships->remove(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:sp_pdf_collection');
