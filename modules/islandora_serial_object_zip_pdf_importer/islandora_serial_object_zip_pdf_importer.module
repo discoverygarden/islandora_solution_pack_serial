@@ -1,0 +1,74 @@
+<?php
+/**
+ * @file
+ * Defines hooks for the Islandora Serial ZIP PDF importer.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_serial_object_zip_pdf_importer_menu() {
+  return array(
+    'islandora/object/%islandora_object/manage/serial-pdf-management/batch' => array(
+      'title' => 'Batch Import',
+      'access callback' => 'islandora_serial_object_pdf_ingest_access',
+      'access arguments' => array(2),
+      'type' => MENU_LOCAL_ACTION,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('islandora_serial_object_zip_pdf_importer_importer_form', 2),
+    ),
+  );
+}
+
+/**
+ * Form for ZIP importing PDFs to intermediate objects.
+ *
+ * @param array $form
+ *   An array representing a form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ * @param AbstractObject $object
+ *   An AbstractObject representing an object within Fedora.
+ *
+ * @return array
+ *   An array representing a form to be rendered.
+ */
+function islandora_serial_object_zip_pdf_importer_importer_form($form, &$form_state, AbstractObject $object) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $form_state['storage']['parent_pid'] = $object->id;
+  return IslandoraSerialObjectZipPDFBatchImporter::getForm($form_state);
+}
+
+/**
+ * Validate function for the importer form.
+ *
+ * @param array $form
+ *   An array representing a form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_zip_pdf_importer_importer_form_validate($form, &$form_state) {
+  if (!IslandoraSerialObjectZipPDFBatchImporter::readyForBatch($form_state)) {
+    form_set_error('', t('Not ready to start the batch ingest.  Make sure all necessary information has been entered.'));
+  }
+}
+
+/**
+ * Submit handler for the importer form.
+ *
+ * @param array $form
+ *   An array representing a form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_zip_pdf_importer_importer_form_submit(array $form, array &$form_state) {
+  $preprocessor = new IslandoraSerialObjectZipPDFBatchImporter(
+    islandora_get_tuque_connection(),
+    IslandoraSerialObjectZipPDFBatchImporter::getBatchInfo($form_state),
+    $form_state['storage']['parent_pid']
+  );
+
+  islandora_batch_ingest(array(
+    'preprocessor' => $preprocessor,
+  ));
+}

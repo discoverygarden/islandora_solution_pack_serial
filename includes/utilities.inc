@@ -355,3 +355,29 @@ SELECT ?child from <#RI> WHERE {
 EOQ;
   return !($object->repository->ri->countQuery($leaf_query, 'sparql'));
 }
+
+/**
+ * Retrieves the highest sequence number of a PDF child.
+ *
+ * @param string $parent_id
+ *   The pid of the Fedora object that is the parent.
+ *
+ * @return int
+ *   0 if the object has no child, the maximum otherwise.
+ */
+function islandora_serial_object_get_max_sequence_number($parent_id) {
+  $tuque = islandora_get_tuque_connection();
+  // Need to append the sequence of this PDF to the end by default.
+  $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
+  $sequence_query = <<<EOQ
+  SELECT ?sequence_number FROM <#ri> WHERE {
+    ?child <http://islandora.ca/ontology/relsext#isConstituentOf> <info:fedora/{$parent_id}> ;
+           <http://islandora.ca/ontology/relsext#{$sequence_predicate}> ?sequence_number
+  }
+  ORDER BY DESC(?sequence_number)
+  LIMIT 1
+EOQ;
+  $sequence_number = $tuque->repository->ri->sparqlQuery($sequence_query);
+  $sequence_number = reset($sequence_number);
+  return $sequence_number ? $sequence_number['sequence_number']['value'] : 0;
+}

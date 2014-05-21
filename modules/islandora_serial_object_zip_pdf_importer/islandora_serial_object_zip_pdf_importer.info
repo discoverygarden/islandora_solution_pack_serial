@@ -1,0 +1,8 @@
+name = "Islandora Serial Solution Pack PDF ZIP Importer"
+description = "Allow for a ZIP containing PDFs to be ingested"
+dependencies[] = islandora
+dependencies[] = islandora_importer
+files[] = includes/importer.inc
+package = Islandora Tools
+version = 7.x-dev
+core = 7.x
