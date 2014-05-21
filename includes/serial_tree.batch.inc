@@ -229,11 +229,10 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent
         array($parent_pid, $object_pid, $object_info),
       );
     }
-    $parent_pid = $object_pid;
     if (!empty($children) && is_array($children)) {
       $operations = array_merge(
         $operations,
-        islandora_serial_object_serial_batch_generate_ops($children, $parent_pid)
+        islandora_serial_object_serial_batch_generate_ops($children, $object_pid)
       );
     }
     ++$sequence_number;
