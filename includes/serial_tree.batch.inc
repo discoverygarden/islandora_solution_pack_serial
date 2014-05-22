@@ -218,10 +218,6 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent
     unset($object_info['children']);
     $object_info['sequence_number'] = $sequence_number;
 
-    // Handle leaves.
-    if (!is_array($children)) {
-      $object_pid = $children;
-    }
     // Skip operations for the first PID which should be the serial.
     if (!is_null($parent_pid)) {
       $operations[] = array(
