@@ -19,7 +19,6 @@
  *       - year: A string representing the year for MODS.
  */
 function islandora_serial_object_serial_batch($object_tree) {
-
   $operations = islandora_serial_object_serial_batch_generate_ops($object_tree);
   if (!empty($operations)) {
     batch_set(
@@ -204,6 +203,7 @@ EOXML;
  *       - volume: A string representing the volume for MODS.
  *       - issue: A string representing the issue for MODS.
  *       - year: A string representing the year for MODS.
+ *  ID's must be unique across all children in the tree.
  * @param NULL|string $parent_pid
  *   The current parent PID of the tree or NULL if it's the root object.
  *
