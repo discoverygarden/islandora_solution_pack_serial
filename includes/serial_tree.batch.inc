@@ -19,7 +19,6 @@
  *       - year: A string representing the year for MODS.
  */
 function islandora_serial_object_serial_batch($object_tree) {
-
   $operations = islandora_serial_object_serial_batch_generate_ops($object_tree);
   if (!empty($operations)) {
     batch_set(
@@ -159,7 +158,7 @@ EOXML;
   $object->relationships->remove(
     FEDORA_RELS_EXT_URI,
     'isMemberOf'
-  );
+);
   $object->relationships->add(
     FEDORA_RELS_EXT_URI,
     'isMemberOf',
@@ -204,6 +203,7 @@ EOXML;
  *       - volume: A string representing the volume for MODS.
  *       - issue: A string representing the issue for MODS.
  *       - year: A string representing the year for MODS.
+ *  ID's must be unique across all children in the tree.
  * @param NULL|string $parent_pid
  *   The current parent PID of the tree or NULL if it's the root object.
  *
@@ -218,6 +218,10 @@ function islandora_serial_object_serial_batch_generate_ops($object_tree, $parent
     unset($object_info['children']);
     $object_info['sequence_number'] = $sequence_number;
 
+    // Handle leaves.
+    if (!is_array($children)) {
+      $object_pid = $children;
+    }
     // Skip operations for the first PID which should be the serial.
     if (!is_null($parent_pid)) {
       $operations[] = array(

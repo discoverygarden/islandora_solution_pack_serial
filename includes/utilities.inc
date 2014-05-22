@@ -251,7 +251,7 @@ function islandora_serial_object_get_intermediates_as_tree($intermediates, $root
       $parent_map[$child['id']] =& $child;
       $parent_map[$child['id']]['children'] = array();
       if ($child['pid'] > 0) {
-        $parent_map[$child['pid']]['children'][] = &$child;
+        $parent_map[$child['pid']]['children'][$child['id']] = &$child;
       }
     }
     unset($child);
