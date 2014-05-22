@@ -158,7 +158,7 @@ EOXML;
   $object->relationships->remove(
     FEDORA_RELS_EXT_URI,
     'isMemberOf'
-);
+  );
   $object->relationships->add(
     FEDORA_RELS_EXT_URI,
     'isMemberOf',
