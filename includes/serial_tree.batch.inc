@@ -19,7 +19,6 @@
  *       - year: A string representing the year for MODS.
  */
 function islandora_serial_object_serial_batch($object_tree) {
-
   $operations = islandora_serial_object_serial_batch_generate_ops($object_tree);
   if (!empty($operations)) {
     batch_set(

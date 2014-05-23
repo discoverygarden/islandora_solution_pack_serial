@@ -9,6 +9,7 @@ define('ISLANDORA_SERIAL_OBJECT_MANAGEMENT_PERMISSION', 'manage serial objects')
 
 // Predicates.
 define('ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE', 'sequence_position');
+define('ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE', 'isConstituentOf');
 
 // MODS xpaths for intermediate management interface.
 define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH', '/mods:mods/mods:titleInfo[1]');
@@ -138,6 +139,10 @@ function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_ste
 function islandora_serial_object_theme($existing, $type, $theme, $path) {
   return array(
     'islandora_serial_object_intermediates_table' => array(
+      'render element' => 'form',
+      'file' => 'theme/theme.inc',
+    ),
+    'islandora_serial_object_pdfs_table' => array(
       'render element' => 'form',
       'file' => 'theme/theme.inc',
     ),

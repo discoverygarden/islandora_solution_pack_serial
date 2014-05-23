@@ -153,7 +153,7 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id)
           '#type' => 'weight',
           '#title' => t('Weight'),
           '#default_value' => isset($child['weight']) ? $child['weight'] : FALSE,
-          '#delta' => 10,
+          '#delta' => 9999,
           '#title_display' => 'invisible',
           '#attributes' => array(
             'class' => array('islandora-serial-object-intermediate-weight'),
@@ -369,15 +369,17 @@ function islandora_serial_object_get_max_sequence_number($parent_id) {
   $tuque = islandora_get_tuque_connection();
   // Need to append the sequence of this PDF to the end by default.
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
+  $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
+  $islandora_namesapce = ISLANDORA_RELS_EXT_URI;
   $sequence_query = <<<EOQ
   SELECT ?sequence_number FROM <#ri> WHERE {
-    ?child <http://islandora.ca/ontology/relsext#isConstituentOf> <info:fedora/{$parent_id}> ;
-           <http://islandora.ca/ontology/relsext#{$sequence_predicate}> ?sequence_number
+    ?child <$islandora_namesapce$pdf_parent_predicate> <info:fedora/{$parent_id}> ;
+           <$islandora_namesapce{$sequence_predicate}> ?sequence_number
   }
   ORDER BY DESC(?sequence_number)
   LIMIT 1
 EOQ;
-  $sequence_number = $tuque->repository->ri->sparqlQuery($sequence_query);
-  $sequence_number = reset($sequence_number);
+  $sequence_number_results = $tuque->repository->ri->sparqlQuery($sequence_query);
+  $sequence_number = reset($sequence_number_results);
   return $sequence_number ? $sequence_number['sequence_number']['value'] : 0;
 }
