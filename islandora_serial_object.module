@@ -9,7 +9,7 @@ define('ISLANDORA_SERIAL_OBJECT_MANAGEMENT_PERMISSION', 'manage serial objects')
 
 // Predicates.
 define('ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE', 'sequence_position');
-define('ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE', 'isConstituentOf');
+define('ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE', 'isComponentOf');
 
 // MODS xpaths for intermediate management interface.
 define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH', '/mods:mods/mods:titleInfo[1]');
@@ -265,3 +265,4 @@ function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps(array $
     );
   }
 }
+
