@@ -89,7 +89,7 @@ function theme_islandora_serial_object_pdfs_table(array $variables) {
       'class' => array('draggable'),
     );
   }
-  $table_id = 'islandroa-serial-object-pdfs-table';
+  $table_id = 'islandora-serial-object-pdfs-table';
   $header = array(t('PDF'), t('Weight'));
   $output = theme(
     'table', array(

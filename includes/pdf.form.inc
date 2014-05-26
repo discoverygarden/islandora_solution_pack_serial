@@ -22,9 +22,9 @@ function islandora_serial_object_pdf_management_form($form, &$form_state, Abstra
   $tuque = islandora_get_tuque_connection();
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
-  $islandora_namesapce = ISLANDORA_RELS_EXT_URI;
+  $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $query = <<<EOQ
-  PREFIX islandora: <$islandora_namesapce>
+  PREFIX islandora: <$islandora_namespace>
   SELECT ?pdf ?position ?label
   FROM <#ri>
   WHERE {

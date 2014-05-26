@@ -370,11 +370,11 @@ function islandora_serial_object_get_max_sequence_number($parent_id) {
   // Need to append the sequence of this PDF to the end by default.
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
-  $islandora_namesapce = ISLANDORA_RELS_EXT_URI;
+  $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $sequence_query = <<<EOQ
   SELECT ?sequence_number FROM <#ri> WHERE {
-    ?child <$islandora_namesapce$pdf_parent_predicate> <info:fedora/{$parent_id}> ;
-           <$islandora_namesapce{$sequence_predicate}> ?sequence_number
+    ?child <$islandora_namespace$pdf_parent_predicate> <info:fedora/{$parent_id}> ;
+           <$islandora_namespace{$sequence_predicate}> ?sequence_number
   }
   ORDER BY DESC(?sequence_number)
   LIMIT 1
