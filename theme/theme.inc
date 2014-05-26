@@ -61,5 +61,49 @@ function theme_islandora_serial_object_intermediates_table(array $variables) {
   $output .= drupal_render_children($form);
   drupal_add_tabledrag($table_id, 'match', 'parent', 'islandora-serial-object-intermediate-pid', 'islandora-serial-object-intermediate-pid', 'islandora-serial-object-intermediate-id', FALSE);
   drupal_add_tabledrag($table_id, 'order', 'sibling', 'islandora-serial-object-intermediate-weight');
+  drupal_add_css(
+    drupal_get_path('module', 'islandora_serial_object') .
+      '/css/islandora_serial_object.css'
+  );
+  return $output;
+}
+
+/**
+ * Implements theme_element().
+ *
+ * Makes the table a draggable one.
+ */
+function theme_islandora_serial_object_pdfs_table(array $variables) {
+  $form = $variables['form'];
+  $rows = array();
+  foreach (element_children($form) as $id) {
+    $form[$id]['weight']['#attributes']['class'] = array(
+      'islandora-serial-object-pdf-weight',
+    );
+    $rows[] = array(
+      'data' => array(
+        drupal_render($form[$id]['label']),
+        drupal_render($form[$id]['weight']),
+      ),
+      'class' => array('draggable'),
+    );
+  }
+  $table_id = 'islandora-serial-object-pdfs-table';
+  $header = array(t('PDF'), t('Weight'));
+  $output = theme(
+    'table', array(
+      'header' => $header,
+      'rows' => $rows,
+      'attributes' => array('id' => $table_id),
+      'empty' => t('No PDFs associated.'),
+    )
+  );
+  $output .= drupal_render_children($form);
+  drupal_add_tabledrag(
+    $table_id,
+    'order',
+    'sibling',
+    'islandora-serial-object-pdf-weight'
+  );
   return $output;
 }
