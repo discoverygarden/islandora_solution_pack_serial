@@ -326,16 +326,22 @@ function islandora_serial_object_get_intermediates_as_tree($intermediates, $root
  */
 function islandora_serial_object_get_children($parent_pid, $tree_structure = FALSE) {
   $tuque = islandora_get_tuque_connection();
+  $islandora_namespace = ISLANDORA_RELS_EXT_URI;
+  $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $query = '
     select $object $parent $label $sequence_num from <#ri>
     where (
       $object <fedora-model:label> $label and
-      $object <http://islandora.ca/ontology/relsext#sequence_position> $sequence_num and
+      $object <!namespace!sequence> $sequence_num and
       walk(
         $object <fedora-rels-ext:isMemberOf> <info:fedora/' . $parent_pid . '>
         and $object <fedora-rels-ext:isMemberOf> $parent)
     )
   ';
+  $query = format_string($query, array(
+    '!namespace' => $islandora_namespace,
+    '!sequence' => $sequence_predicate,
+  ));
   $raw_results = $tuque->repository->ri->itqlQuery($query);
   $leafs = islandora_serial_object_get_pdf_child_objects();
   $flat_structure = array();
@@ -515,10 +521,12 @@ EOQ;
  */
 function islandora_serial_object_get_pdf_child_objects() {
   $connection = islandora_get_tuque_connection();
+  $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
+  $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $pdf_child_query = <<<EOQ
-SELECT DISTINCT ?obj FROM <#RI> WHERE {
+SELECT DISTINCT ?obj FROM <#ri> WHERE {
   ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateCModel> .
-  ?pdf <http://islandora.ca/ontology/relsext#isConstituentOf> ?obj
+  ?pdf <$islandora_namespace{$pdf_parent_predicate}> ?obj
 }
 EOQ;
   $results = $connection->repository->ri->sparqlQuery($pdf_child_query);
