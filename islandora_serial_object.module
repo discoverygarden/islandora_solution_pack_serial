@@ -168,7 +168,20 @@ function islandora_serial_object_menu() {
     'page arguments' => array(2),
     'file' => 'includes/pdf.form.inc',
   );
-
+  $items['islandora/object/%islandora_object/manage/intermediate-management'] = array(
+    'title' => 'Intermediate Management',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'islandora_serial_object_manage_intermediates_form',
+      'manage',
+      2,
+    ),
+    'access callback' => 'islandora_serial_object_intermediate_management_access',
+    'access arguments' => array(2),
+    'file' => 'includes/manage.inc',
+  );
   return $items;
 }
 
@@ -197,6 +210,19 @@ function islandora_serial_object_pdf_management_access(AbstractObject $object) {
  */
 function islandora_serial_object_pdf_ingest_access(AbstractObject $object) {
   return islandora_serial_object_pdf_management_access($object) && islandora_object_access(ISLANDORA_INGEST, $object);
+}
+
+/**
+ * Access callback for the intermediate management form.
+ *
+ * @param AbstractObject $object
+ *   An AbstractObject representing an object within Fedora.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function islandora_serial_object_intermediate_management_access(AbstractObject $object) {
+  return islandora_object_access(ISLANDORA_INGEST, $object) && in_array('islandora:rootSerialCModel', $object->models);
 }
 
 /**
