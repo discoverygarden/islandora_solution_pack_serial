@@ -110,8 +110,13 @@ function islandora_serial_object_views_default_views() {
   $handler->display->display_options['arguments']['RELS_EXT_isComponentOf_uri_mt']['summary_options']['items_per_page'] = '25';
   $handler->display->display_options['arguments']['RELS_EXT_isComponentOf_uri_mt']['specify_validation'] = TRUE;
   $handler->display->display_options['arguments']['RELS_EXT_isComponentOf_uri_mt']['validate']['type'] = 'php';
-  $handler->display->display_options['arguments']['RELS_EXT_isComponentOf_uri_mt']['validate_options']['code'] = '$object = islandora_object_load($argument);
-  return $object && in_array(\'islandora:intermediateCModel\', $object->models);
+  $handler->display->display_options['arguments']['RELS_EXT_isComponentOf_uri_mt']['validate_options']['code'] = 'module_load_include(\'inc\', \'islandora_serial_object\', \'includes/utilities\');
+$object = islandora_object_load($argument);
+$leaf = FALSE;
+if ($object) {
+  $leaf = islandora_serial_object_is_leaf($object);
+}
+return $object && $leaf && in_array(\'islandora:intermediateCModel\', $object->models);
   ';
   /* Filter criterion: Islandora Solr: RELS_EXT_hasModel_uri_ms */
   $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms']['id'] = 'RELS_EXT_hasModel_uri_ms';
