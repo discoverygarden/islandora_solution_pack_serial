@@ -265,3 +265,13 @@ function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps(array $
     );
   }
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function islandora_serial_object_views_api($module = NULL, $api = NULL) {
+  return array(
+    "api" => '3.0',
+    'path' => drupal_get_path('module', 'islandora_serial_object') . '/views',
+  );
+}
