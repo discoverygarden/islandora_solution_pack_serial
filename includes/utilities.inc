@@ -276,6 +276,10 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
  * @param string $root_pid
  *   The PID of the root serial object.
  *
+ * @param bool $ingest
+ *   Whether the action is generating from the islandora_ingest_form or through
+ *   the intermediate manage form.
+ *
  * @return array
  *   The tree structure of the serial intermediate objects to set. An array of
  *   arrays where the key is the root serial object pid. Each array is an
