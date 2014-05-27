@@ -96,64 +96,72 @@ EOXML;
     $mods_xpath = new DOMXPath($mods_doc);
   }
   else {
-    $mods_datastream = $object['MODS'];
-    $mods_doc->loadXML($object['MODS']->content);
-    $mods_xpath = new DOMXPath($mods_doc);
-    $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-    // Remove MODS data if necessary.
-    $xpaths_to_remove = array(
-      ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH,
-      ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH,
-      ISLANDORA_SERIAL_OBJECT_MODS_ISSUE_XPATH,
-      ISLANDORA_SERIAL_OBJECT_MODS_YEAR_START_XPATH,
-      ISLANDORA_SERIAL_OBJECT_MODS_YEAR_END_XPATH,
-    );
-    foreach ($xpaths_to_remove as $xpath) {
-      $elements = $mods_xpath->query($xpath);
-      if ($elements->length) {
-        $item = $elements->item(0);
-        $item->parentNode->removeChild($item);
+    // XXX: This condition will never hit but is likely to be used when
+    // a design is fully hashed out.
+    if (!$object_info['ingested']) {
+      $mods_datastream = $object['MODS'];
+      $mods_doc->loadXML($object['MODS']->content);
+      $mods_xpath = new DOMXPath($mods_doc);
+      $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+      // Remove MODS data if necessary.
+      $xpaths_to_remove = array(
+        ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH,
+        ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH,
+        ISLANDORA_SERIAL_OBJECT_MODS_ISSUE_XPATH,
+        ISLANDORA_SERIAL_OBJECT_MODS_YEAR_START_XPATH,
+        ISLANDORA_SERIAL_OBJECT_MODS_YEAR_END_XPATH,
+      );
+      foreach ($xpaths_to_remove as $xpath) {
+        $elements = $mods_xpath->query($xpath);
+        if ($elements->length) {
+          $item = $elements->item(0);
+          $item->parentNode->removeChild($item);
+        }
       }
+      // Access elements to add to.
+      $mods_origin_infos = $mods_xpath->query(ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH);
+      $mods_title_infos = $mods_xpath->query(ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH);
     }
-    // Access elements to add to.
-    $mods_origin_infos = $mods_xpath->query(ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH);
-    $mods_title_infos = $mods_xpath->query(ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH);
   }
-  // Get or create elements to work on.
-  if (isset($mods_title_infos) && $mods_origin_infos->length) {
-    $mods_origin_info = $mods_origin_infos->item(0);
-  }
-  else {
-    $mods_origin_info = $mods_doc->createElement('originInfo');
-    $mods_doc->documentElement->appendChild($mods_origin_info);
-  }
-  if (isset($mods_title_infos) && $mods_title_infos->length) {
-    $mods_title_info = $mods_title_infos->item(0);
-  }
-  else {
-    $mods_title_info = $mods_doc->createElement('titleInfo');
-    $mods_doc->documentElement->appendChild($mods_title_info);
-  }
+  // XXX: This condition will never hit but is likely to be used when
+  // a design is fully hashed out.
+  if (!$object_info['ingested']) {
+    // Get or create elements to work on.
+    if (isset($mods_title_infos) && $mods_origin_infos->length) {
+      $mods_origin_info = $mods_origin_infos->item(0);
+    }
+    else {
+      $mods_origin_info = $mods_doc->createElement('originInfo');
+      $mods_doc->documentElement->appendChild($mods_origin_info);
+    }
+    if (isset($mods_title_infos) && $mods_title_infos->length) {
+      $mods_title_info = $mods_title_infos->item(0);
+    }
+    else {
+      $mods_title_info = $mods_doc->createElement('titleInfo');
+      $mods_doc->documentElement->appendChild($mods_title_info);
+    }
 
-  // Add MODS data.
-  $title_element = $mods_doc->createElement('title', $object_info['title']);
-  $volume_element = $mods_doc->createElement('partNumber', $object_info['volume']);
-  $issue_element = $mods_doc->createElement('partName', $object_info['issue']);
-  $year_start_element = $mods_doc->createElement('dateIssued', $object_info['year']);
-  $year_end_element = $mods_doc->createElement('dateIssued', $object_info['year']);
+    // Add MODS data.
+    $title_element = $mods_doc->createElement('title', $object_info['title']);
+    $volume_element = $mods_doc->createElement('partNumber', $object_info['volume']);
+    $issue_element = $mods_doc->createElement('partName', $object_info['issue']);
+    $year_start_element = $mods_doc->createElement('dateIssued', $object_info['year']);
+    $year_end_element = $mods_doc->createElement('dateIssued', $object_info['year']);
 
-  $year_start_element->setAttribute('point', 'start');
-  $year_end_element->setAttribute('point', 'end');
-  $year_start_element->setAttribute('encoding', 'w3cdtf');
-  $year_end_element->setAttribute('encoding', 'w3cdtf');
+    $year_start_element->setAttribute('point', 'start');
+    $year_end_element->setAttribute('point', 'end');
+    $year_start_element->setAttribute('encoding', 'w3cdtf');
+    $year_end_element->setAttribute('encoding', 'w3cdtf');
 
-  $mods_title_info->appendChild($title_element);
-  $mods_title_info->appendChild($volume_element);
-  $mods_title_info->appendChild($issue_element);
-  $mods_origin_info->appendChild($year_start_element);
-  $mods_origin_info->appendChild($year_end_element);
+    $mods_title_info->appendChild($title_element);
+    $mods_title_info->appendChild($volume_element);
+    $mods_title_info->appendChild($issue_element);
+    $mods_origin_info->appendChild($year_start_element);
+    $mods_origin_info->appendChild($year_end_element);
 
-  $mods_datastream->content = $mods_doc->saveXML();
+    $mods_datastream->content = $mods_doc->saveXML();
+  }
   $object->relationships->autoCommit = FALSE;
   $object->relationships->remove(
     FEDORA_RELS_EXT_URI,
