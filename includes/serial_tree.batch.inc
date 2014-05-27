@@ -173,7 +173,7 @@ EOXML;
     ISLANDORA_RELS_EXT_URI,
     ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE,
     $object_info['sequence_number'],
-    RELS_TYPE_PLAIN_LITERAL
+    RELS_TYPE_INT
   );
   $object->relationships->commitRelationships();
 

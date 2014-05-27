@@ -147,7 +147,7 @@ function islandora_serial_object_associate_pdf(&$form_state, $parent_id) {
     ISLANDORA_RELS_EXT_URI,
     ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE,
     $sequence_number,
-    RELS_TYPE_PLAIN_LITERAL
+    RELS_TYPE_INT
   );
   $form_state['redirect'] = "islandora/object/$parent_id/manage/serial-pdf-management";
 }
@@ -192,7 +192,7 @@ function islandora_serial_object_set_pdf_position($pid, $position) {
     ISLANDORA_RELS_EXT_URI,
     ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE,
     $position,
-    RELS_TYPE_PLAIN_LITERAL
+    RELS_TYPE_INT
   );
 
   $relations->commitRelationships();
