@@ -9,11 +9,10 @@
  */
 function theme_islandora_serial_object_intermediates_table(array $variables) {
   $form = $variables['form'];
-
   $rows = array();
   foreach (element_children($form) as $id) {
-    $class = array('draggable');
-
+    $class = isset($form[$id]['#attributes']['class']) ? $form[$id]['#attributes']['class'] : array();
+    $class[] = 'draggable';
     $indent = theme('indentation', array('size' => $form[$id]['depth']['#value']));
     unset($form[$id]['depth']);
     $rows[] = array(
