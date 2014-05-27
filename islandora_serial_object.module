@@ -265,4 +265,3 @@ function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps(array $
     );
   }
 }
-
