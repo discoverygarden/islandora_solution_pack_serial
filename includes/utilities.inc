@@ -528,15 +528,120 @@ function islandora_serial_object_get_pdf_child_objects() {
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $pdf_child_query = <<<EOQ
-SELECT DISTINCT ?obj FROM <#ri> WHERE {
+SELECT ?obj ?pdf ?pdf_label FROM <#ri> WHERE {
   ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateCModel> .
-  ?pdf <$islandora_namespace{$pdf_parent_predicate}> ?obj
+  ?pdf <$islandora_namespace{$pdf_parent_predicate}> ?obj ;
+       <fedora-model:label> ?pdf_label
 }
 EOQ;
   $results = $connection->repository->ri->sparqlQuery($pdf_child_query);
   $leaf_objects = array();
   foreach ($results as $result) {
-    $leaf_objects[$result['obj']['value']] = $result['obj']['value'];
+    if (!isset($leaf_objects[$result['obj']['value']])) {
+      $leaf_objects[$result['obj']['value']] = array();
+    }
+    $leaf_objects[$result['obj']['value']][$result['pdf']['value']] = array(
+      'pid' => $result['pdf']['value'],
+      'label' => $result['pdf_label']['value'],
+    );
   }
   return $leaf_objects;
+}
+
+/**
+ * Go grab a structure to be used for JSONing for the tree view.
+ *
+ * @param AbstractObject $object
+ *   An AbstractObject representing an object within Fedora.
+ *
+ * @return array
+ *   An array structure to be encoded into JSON containing:
+ *   -data: An array containing:
+ *     -id: A string of the PID of the object.
+ *     -parent: A string of the parent PID of the object.
+ *     -text: A string of the label of the object.
+ *     -type: A string denoting how the node is to be rendered, either leaf,
+ *     branch or pdf.
+ *   -types: An array defining all the types used in the tree.
+ *   -plugins: An array of plugins to include for the tree.
+ */
+function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
+  // Need to get the correct depth and ordering on our existing elements.
+  $intermediates['intermediates'] = islandora_serial_object_get_children($object->id);
+  // Need to get the correct depth and ordering on our existing elements.
+  $intermediates = islandora_serial_object_sort_intermediates($intermediates, $object->id);
+  $json_data = array();
+  $leafs = islandora_serial_object_get_pdf_child_objects();
+  foreach ($intermediates['intermediates'] as $children) {
+    foreach ($children as $values) {
+      $json_data[] = array(
+        'id' => $values['id'],
+        'parent' => $values['pid'] == $object->id ? '#' : $values['pid'],
+        'text' => $values['title'],
+        'type' => $values['leaf'] ? 'leaf' : 'branch',
+      );
+      if ($values['leaf']) {
+        if (isset($leafs[$values['id']])) {
+          foreach ($leafs[$values['id']] as $pdf_child) {
+            $json_data[] = array(
+              'id' => $pdf_child['pid'],
+              'parent' => $values['id'],
+              'text' => $pdf_child['label'],
+              'type' => 'pdf',
+            );
+          }
+        }
+      }
+    }
+  }
+  return array(
+    'data' => $json_data,
+    'types' => array(
+      'branch' => array(),
+      'leaf' => array(),
+      'pdf' => array(),
+    ),
+    'plugins' => array(
+      'types',
+      'contextmenu',
+      'ui',
+    ),
+  );
+}
+
+/**
+ * Constructs the tree view for display purposes.
+ *
+ * @param AbstractObject $object
+ *   An AbstractObject representing an object within Fedora.
+ *
+ * @return array
+ *   An array representing the jsTree view to be rendered.
+ */
+function islandora_serial_object_get_tree_view(AbstractObject $object) {
+  $module_path = drupal_get_path('module', 'islandora_serial_object');
+  $library_path = libraries_get_path('jstree');
+  $json = islandora_serial_object_get_json_for_tree($object);
+  $form['test'] = array(
+    '#markup' => '<div id="islandora_serial_object_tree_view"></div>',
+  );
+  $form['#attached']['css'] = array(
+    "$library_path/dist/themes/default/style.min.css",
+  );
+  $form['#attached']['js'] = array(
+    "$module_path/js/jquery-1.9.1.min.js" => array(
+      'group' => JS_LIBRARY,
+    ),
+    "$library_path/dist/jstree.min.js" => array(
+      'group' => JS_LIBRARY,
+    ),
+    "$module_path/js/jstree.js" => array(
+      'group' => JS_LIBRARY,
+    ),
+  );
+  $form['#attached']['js'][] = array(
+    'data' => array('islandora_serial_object' => $json),
+    'type' => 'setting',
+  );
+  return $form;
 }
