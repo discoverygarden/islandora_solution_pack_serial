@@ -3,7 +3,7 @@
  * Create a jsTree for use in rendering a serial object.
  */
 
-Drupal.settings.jsTree_jQuery =jQuery.noConflict(true);
+Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
 (function ($) {
     Drupal.behaviors.jsTree = {
         attach: function(context, settings) {

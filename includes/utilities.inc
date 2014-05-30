@@ -622,7 +622,7 @@ function islandora_serial_object_get_tree_view(AbstractObject $object) {
   $module_path = drupal_get_path('module', 'islandora_serial_object');
   $library_path = libraries_get_path('jstree');
   $json = islandora_serial_object_get_json_for_tree($object);
-  $form['test'] = array(
+  $form['serial_object_tree'] = array(
     '#markup' => '<div id="islandora_serial_object_tree_view"></div>',
   );
   $form['#attached']['css'] = array(

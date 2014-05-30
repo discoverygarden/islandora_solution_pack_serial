@@ -295,28 +295,15 @@ function islandora_serial_object_block_view($delta = '') {
   $block = array();
   switch ($delta) {
     case 'islandora_serial_object_tree':
-      if (arg(0) == 'islandora' AND arg(1) == 'object') {
-        // Don't do anything if we're beyond islandora/object/PID.
-        // That is, only show the bookmark block if we're on the standard view.
-        if (arg(3)) {
-          break;
-        }
-        module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
-        // Snag the PID and hook up the block.
-        if (arg(2)) {
-          $pid = arg(2);
-        }
-        else {
-          $pid = variable_get('islandora_repository_pid', 'islandora:root');
-        }
-        $object = islandora_object_load($pid);
+      if (strpos(current_path(), 'islandora/object') === 0) {
+        $object = menu_get_object('islandora_object', 2);
         if (!in_array('islandora:rootSerialCModel', $object->models)) {
           break;
         }
         $block['subject'] = t('Islandora Serial Object Tree View');
         $block['content'] = islandora_serial_object_get_tree_view($object);
+        break;
       }
-      break;
   }
   return $block;
 }
