@@ -275,3 +275,35 @@ function islandora_serial_object_views_api($module = NULL, $api = NULL) {
     'path' => drupal_get_path('module', 'islandora_serial_object') . '/views',
   );
 }
+
+/**
+ * Implements hook_block_info().
+ */
+function islandora_serial_object_block_info() {
+  return array(
+    'islandora_serial_object_tree' => array(
+      'info' => t('Islandora Serial Object Tree View'),
+      'cache' => DRUPAL_NO_CACHE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function islandora_serial_object_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'islandora_serial_object_tree':
+      if (strpos(current_path(), 'islandora/object') === 0) {
+        $object = menu_get_object('islandora_object', 2);
+        if (!in_array('islandora:rootSerialCModel', $object->models)) {
+          break;
+        }
+        $block['subject'] = t('Islandora Serial Object Tree View');
+        $block['content'] = islandora_serial_object_get_tree_view($object);
+        break;
+      }
+  }
+  return $block;
+}
