@@ -15,7 +15,11 @@ This module requires the following modules/libraries:
 
 Install as usual, see [this](https://drupal.org/documentation/install/modules-themes/modules-7) for further information.
 
+Download/clone the [jsTree](https://github.com/vakata/jstree) library to `sites/all/libraries/jstree`. The module has been tested with the 3.0.0 release of jsTree.
+
 ## Configuration
+
+There is a block available to display the tree hierarchy on the root serial object.
 
 ## Troubleshooting/Issues
 
