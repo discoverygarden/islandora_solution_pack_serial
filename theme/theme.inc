@@ -107,3 +107,33 @@ function theme_islandora_serial_object_pdfs_table(array $variables) {
   );
   return $output;
 }
+
+/**
+ * Implements theme_element().
+ */
+function theme_islandora_serial_object_intermediate_levels_table(array $variables) {
+  $form = $variables['form'];
+  $rows = array();
+  foreach (element_children($form) as $id) {
+    $rows[] = array(
+      'data' => array(
+        drupal_render($form[$id]['checkbox']),
+        drupal_render($form[$id]['level']),
+        drupal_render($form[$id]['type']),
+        drupal_render($form[$id]['caption']),
+      ),
+    );
+  }
+  $output = theme('table', array(
+      'header' => array(
+        'checkbox' => '',
+        'level' => t('Hierachial Level'),
+        'type' => t('MODS detail[@type] Value'),
+        'caption' => t('Default Caption Value'),
+      ),
+      'rows' => $rows,
+      'attributes' => array(),
+      'empty' => t('No levels defined!'),
+  ));
+  return $output;
+}

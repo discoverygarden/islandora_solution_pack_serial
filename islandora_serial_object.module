@@ -122,6 +122,13 @@ function islandora_serial_object_islandora_xml_form_builder_forms() {
  */
 function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_steps() {
   return array(
+    'islandora_serial_object_create_fields' => array(
+      'type' => 'form',
+      'weight' => 9,
+      'module' => 'islandora_serial_object',
+      'form_id' => 'islandora_serial_object_create_fields_for_intermediates_form',
+      'file' => 'includes/intermediate_fields.form.inc',
+    ),
     'islandora_serial_object' => array(
       'weight' => 10,
       'type' => 'form',
@@ -143,6 +150,10 @@ function islandora_serial_object_theme($existing, $type, $theme, $path) {
       'file' => 'theme/theme.inc',
     ),
     'islandora_serial_object_pdfs_table' => array(
+      'render element' => 'form',
+      'file' => 'theme/theme.inc',
+    ),
+    'islandora_serial_object_intermediate_levels_table' => array(
       'render element' => 'form',
       'file' => 'theme/theme.inc',
     ),
@@ -186,6 +197,13 @@ function islandora_serial_object_menu() {
     'access callback' => 'islandora_serial_object_intermediate_management_access',
     'access arguments' => array(2),
     'file' => 'includes/manage.inc',
+  );
+  $items['tests'] = array(
+    'title' => 'test',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_serial_object_create_fields_for_intermediates_form'),
+    'file' => 'includes/intermediate_fields.form.inc',
+    'access callback' => TRUE,
   );
   return $items;
 }
