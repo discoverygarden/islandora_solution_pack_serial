@@ -281,7 +281,8 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
  *   the intermediate manage form.
  *
  * @return array
- *   The tree structure of the serial intermediate objects to set. An array of
+ *   FALSE if the tree has no intermediate objects or the tree structure of the
+ *   serial intermediate objects to set. The tree structure is an array of
  *   arrays where the key is the root serial object pid. Each array is an
  *   an array containing:
  *     - children: An array containing:
@@ -292,27 +293,32 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
  *       - year: A string representing the year for MODS.
  */
 function islandora_serial_object_get_intermediates_as_tree($intermediates, $root_pid, $ingest) {
-  // Set the root pid value first.
-  $parent_map = array();
-  $parents = array();
-  $start = $ingest ? 0 : $root_pid;
-  $parents =& $intermediates[$start];
-  foreach ($intermediates as &$root) {
-    foreach ($root as &$child) {
-      $parent_map[$child['id']] =& $child;
-      $parent_map[$child['id']]['children'] = array();
-      if ($child['pid'] != $root_pid) {
-        $parent_map[$child['pid']]['children'][$child['id']] = &$child;
-      }
-    }
-    unset($child);
+  if (empty($intermediates)) {
+    $tree = FALSE;
   }
-  unset($root);
-  $tree = array(
-    $root_pid => array(
-      'children' => $parents,
-    ),
-  );
+  else {
+    // Set the root pid value first.
+    $parent_map = array();
+    $parents = array();
+    $start = $ingest ? 0 : $root_pid;
+    $parents =& $intermediates[$start];
+    foreach ($intermediates as &$root) {
+      foreach ($root as &$child) {
+        $parent_map[$child['id']] =& $child;
+        $parent_map[$child['id']]['children'] = array();
+        if ($child['pid'] != $root_pid) {
+          $parent_map[$child['pid']]['children'][$child['id']] = &$child;
+        }
+      }
+      unset($child);
+    }
+    unset($root);
+    $tree = array(
+      $root_pid => array(
+        'children' => $parents,
+      ),
+    );
+  }
   return $tree;
 }
 
@@ -364,11 +370,13 @@ function islandora_serial_object_get_children($parent_pid, $tree_structure = FAL
   else {
     $processed_results = array();
     $tree = islandora_serial_object_build_tree($flat_structure, $parent_pid);
-    islandora_serial_object_build_flat_structure_from_tree(
-      $tree[$parent_pid],
-      array_map('islandora_serial_object_format_values_for_flat_structure', $flat_structure),
-      $processed_results
-    );
+    if ($tree != $parent_pid) {
+      islandora_serial_object_build_flat_structure_from_tree(
+        $tree[$parent_pid],
+        array_map('islandora_serial_object_format_values_for_flat_structure', $flat_structure),
+        $processed_results
+      );
+    }
   }
   return $processed_results;
 }
