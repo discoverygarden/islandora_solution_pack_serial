@@ -240,6 +240,8 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
       }
     }
     $tree = islandora_serial_object_get_intermediates_as_tree($filtered_children, $serial_id, $ingest);
-    islandora_serial_object_serial_batch($tree);
+    if ($tree) {
+      islandora_serial_object_serial_batch($tree);
+    }
   }
 }
