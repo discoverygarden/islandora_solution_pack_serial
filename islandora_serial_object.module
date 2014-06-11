@@ -198,13 +198,6 @@ function islandora_serial_object_menu() {
     'access arguments' => array(2),
     'file' => 'includes/manage.inc',
   );
-  $items['tests'] = array(
-    'title' => 'test',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_serial_object_create_fields_for_intermediates_form'),
-    'file' => 'includes/intermediate_fields.form.inc',
-    'access callback' => TRUE,
-  );
   return $items;
 }
 

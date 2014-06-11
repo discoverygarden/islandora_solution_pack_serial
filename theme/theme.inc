@@ -135,5 +135,6 @@ function theme_islandora_serial_object_intermediate_levels_table(array $variable
       'attributes' => array(),
       'empty' => t('No levels defined!'),
   ));
+  $output .= drupal_render_children($form);
   return $output;
 }

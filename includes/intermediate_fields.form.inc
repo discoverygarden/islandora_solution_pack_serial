@@ -19,16 +19,34 @@ function islandora_serial_object_create_fields_for_intermediates_form($form, &$f
   $rows = array();
   $form['#tree'] = TRUE;
   $form['intermediate_table'] = array(
-    '#theme' => 'islandora_serial_object_intermediate_levels_table',
+    'rows' => array(
+      '#theme' => 'islandora_serial_object_intermediate_levels_table',
+    ),
     '#prefix' => '<div id="islandora-serial-object-intermediate-table-level-wrapper">',
     '#suffix' => '</div>',
+    'remove_selected' => array(
+      '#type' => 'button',
+      '#value' => t('Remove selected'),
+      '#ajax' => array(
+        'callback' => 'islandora_serial_object_ajax_intermediate_level',
+        'wrapper' => 'islandora-serial-object-intermediate-table-level-wrapper',
+      ),
+    ),
+    'add_level' => array(
+      '#type' => 'button',
+      '#value' => t('Add a level'),
+      '#ajax' => array(
+        'callback' => 'islandora_serial_object_ajax_intermediate_level',
+        'wrapper' => 'islandora-serial-object-intermediate-table-level-wrapper',
+      ),
+    ),
   );
   if (isset($form_state['triggering_element'])) {
     $last_parent = end($form_state['triggering_element']['#parents']);
     $rows = isset($form_state['islandora_serial_object_intermediate_levels']) ? $form_state['islandora_serial_object_intermediate_levels'] : array();
     // Update what might have changed since the last AJAX request now.
-    if (isset($form_state['values']['intermediate_table'])) {
-      foreach ($form_state['values']['intermediate_table'] as $key => $values) {
+    if (isset($form_state['values']['intermediate_table']['rows'])) {
+      foreach ($form_state['values']['intermediate_table']['rows'] as $key => $values) {
         foreach ($values as $type => $value) {
           $rows[$key][$type] = $value;
         }
@@ -48,9 +66,9 @@ function islandora_serial_object_create_fields_for_intermediates_form($form, &$f
     // Remove selected.
     elseif ($last_parent == 'remove_selected') {
       // Determine what rows need to be removed.
-      if (isset($form_state['values']['intermediate_table'])) {
+      if (isset($form_state['values']['intermediate_table']['rows'])) {
         $removed = FALSE;
-        foreach ($form_state['values']['intermediate_table'] as $key => $values) {
+        foreach ($form_state['values']['intermediate_table']['rows'] as $key => $values) {
           if ($values['checkbox']) {
             unset($rows[$key]);
             $removed = TRUE;
@@ -66,29 +84,8 @@ function islandora_serial_object_create_fields_for_intermediates_form($form, &$f
         }
       }
     }
-    islandora_serial_object_construct_intermediate_levels($form['intermediate_table'], $rows);
+    islandora_serial_object_construct_intermediate_levels($form['intermediate_table']['rows'], $rows);
   }
-
-  $form['remove_selected'] = array(
-    '#type' => 'button',
-    '#value' => t('Remove selected'),
-    '#ajax' => array(
-      'callback' => 'islandora_serial_object_ajax_intermediate_level',
-      'wrapper' => 'islandora-serial-object-intermediate-table-level-wrapper',
-    ),
-  );
-  $form['add_level'] = array(
-    '#type' => 'button',
-    '#value' => t('Add a level'),
-    '#ajax' => array(
-      'callback' => 'islandora_serial_object_ajax_intermediate_level',
-      'wrapper' => 'islandora-serial-object-intermediate-table-level-wrapper',
-    ),
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Submit lulul'),
-  );
   $form_state['islandora_serial_object_intermediate_levels'] = $rows;
   return $form;
 }
@@ -104,15 +101,62 @@ function islandora_serial_object_create_fields_for_intermediates_form($form, &$f
 function islandora_serial_object_create_fields_for_intermediates_form_validate($form, &$form_state) {
   $last_parent = end($form_state['triggering_element']['#parents']);
   if ($last_parent == 'submit' || $last_parent == 'next') {
-    if (isset($form_state['values']['intermediate_table'])) {
-      foreach ($form_state['values']['intermediate_table'] as $key => $values) {
+    if (isset($form_state['values']['intermediate_table']['rows'])) {
+      foreach ($form_state['values']['intermediate_table']['rows'] as $key => $values) {
         foreach ($values as $value_key => $value) {
           if ($value_key != 'checkbox' && empty($value)) {
-            form_error($form['intermediate_table'][$key][$value_key], t('The @type field cannot be empty!', array('@type' => $value_key)));
+            form_error($form['intermediate_table']['rows'][$key][$value_key], t('The @type field cannot be empty!', array('@type' => $value_key)));
           }
         }
       }
     }
+    else {
+      form_error($form['intermediate_table'], t('Must define at least one level!'));
+    }
+  }
+}
+
+/**
+ * Submit handler for creating variable fields for intermediate objects.
+ *
+ * @param array $form
+ *   An array representing a form in Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_create_fields_for_intermediates_form_submit($form, &$form_state) {
+  module_load_include('inc', 'islandora', 'includes/ingest.form');
+  $object = islandora_ingest_form_get_object($form_state);
+  $level_data = array();
+  foreach ($form_state['values']['intermediate_table']['rows'] as $row) {
+    $level_data[] = array(
+      'level' => $row['level_value'],
+      'type' => $row['type'],
+      'caption' => $row['caption'],
+    );
+  }
+  $json_levels = json_encode(array_values($level_data));
+  // Need to construct a new datastream to store these in as JSON.
+  $ds = $object->constructDatastream('SERIAL-LEVELS', 'M');
+  $ds->label = 'Hierachial Information for the Serial Object';
+  $ds->mimetype = 'application/json';
+  $ds->setContentFromString($json_levels);
+  $object->ingestDatastream($ds);
+}
+
+/**
+ * Submit handler for creating variable fields for intermediate objects.
+ *
+ * @param array $form
+ *   An array representing a form in Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_create_fields_for_intermediates_form_undo_submit($form, &$form_state) {
+  module_load_include('inc', 'islandora', 'includes/ingest.form');
+  $object = islandora_ingest_form_get_object($form_state);
+  if (isset($object['SERIAL-LEVELS'])) {
+    $object->purgeDatastream('SERIAL-LEVELS');
   }
 }
 
@@ -152,6 +196,10 @@ function islandora_serial_object_construct_intermediate_levels(&$form, $rows) {
       ),
       'level' => array(
         '#markup' => t('Level @level', array('@level' => $values['level'])),
+      ),
+      'level_value' => array(
+        '#type' => 'value',
+        '#value' => $values['level'],
       ),
       'type' => array(
         '#type' => 'textfield',
