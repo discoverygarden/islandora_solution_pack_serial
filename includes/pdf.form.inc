@@ -123,6 +123,26 @@ function islandora_serial_object_ingest_pdf_page_callback(AbstractObject $object
   return drupal_get_form('islandora_ingest_form', $config);
 }
 
+ 
+/**
+ * Page callback for ingesting a section hub on an intermediate serial object.
+ *
+ * @param AbstractObject $object
+ *   An AbstractObject representing a Fedora object.
+ *
+ * @return array
+ *   The islandora ingest form passing through the ingest steps configuration.
+ */
+function islandora_serial_object_ingest_section_page_callback(AbstractObject $object) {
+  module_load_include('inc', 'islandora', 'includes/ingest.form');
+  module_load_include('inc', 'islandora_basic_collection', 'includes/ingest.form');
+  $parent = islandora_object_load('islandora:serial_collection');
+  $config = islandora_basic_collection_get_ingest_configuration($parent);
+  $config['models'] = array('islandora:intermediateSerialCModelStub');
+  $config['islandora_serial_object_intermediate_pdf_parent'] = $object->id;
+  dsm($config);
+  return drupal_get_form('islandora_ingest_form', $config);
+}
 /**
  * Ingest step callback to associate a PDF.
  *
