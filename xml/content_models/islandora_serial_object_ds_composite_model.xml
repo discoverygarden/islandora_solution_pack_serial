@@ -11,4 +11,7 @@
     <dsTypeModel ID="MODS" optional="true">
         <form FORMAT_URI="http://www.loc.gov/mods/v3" MIME="text/xml"></form>
     </dsTypeModel>
+    <dsTypeModel ID="SERIAL-LEVELS" optional="true">
+        <form MIME="application/json"></form>
+    </dsTypeModel>
 </dsCompositeModel>
