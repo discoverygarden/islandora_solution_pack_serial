@@ -160,50 +160,63 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
     // all of the fun AJAX changes that had occurred.
     $form_id = $form['#form_id'];
     $form = drupal_rebuild_form($form_id, $form_state, $form);
+
     foreach ($form_state['values']['table_wrapper']['islandora_serial_object_intermediates'] as $id => $intermediate) {
-      // Only validate if the object hasn't been ingested already.
-      if (!$intermediate['ingested']) {
-        if (empty($intermediate['title']) && empty($intermediate['volume']) && empty($intermediate['issue']) && empty($intermediate['volume'])) {
-          if (isset($form_state['islandora_serial_object_intermediates']['intermediates'][$id])) {
-            // Need to see if these children are empty as well.
-            $empty_children = TRUE;
-            foreach ($form_state['islandora_serial_object_intermediates']['intermediates'][$id] as $vals) {
-              if (!empty($vals['title'])|| !empty($vals['volume']) || !empty($vals['issue']) || !empty($vals['year'])) {
-                $empty_children = FALSE;
-                break;
+      if (isset($form_state['islandora_serial_object_intermediates']['intermediates'][$id])) {
+        // Need to see if these children are empty as well.
+        $empty_children = TRUE;
+        foreach ($form_state['islandora_serial_object_intermediates']['intermediates'][$id] as $vals) {
+          if (!empty($vals['caption']) || !empty($vals['number'])) {
+            $empty_children = FALSE;
+            break;
+          }
+        }
+        if (!$empty_children) {
+          // Because of the above form rebuild, form_set_error does not
+          // append the error class on the correct elements.
+          foreach ($form['table_wrapper']['islandora_serial_object_intermediates'][$id] as $field_name => &$field) {
+            $fields_to_mark = array(
+              'caption',
+              'number',
+            );
+            if (in_array($field_name, $fields_to_mark)) {
+              if (!isset($field['attributes']['class'])) {
+                $field['#attributes']['class'] = array('error');
+              }
+              else {
+                $field['#attributes']['class'][] = 'error';
               }
             }
-            if (!$empty_children) {
-              // Because of the above form rebuild, form_set_error does not
-              // append the error class on the correct elements.
-              foreach ($form['table_wrapper']['islandora_serial_object_intermediates'][$id] as $field_name => &$field) {
-                $fields_to_mark = array(
-                  'title',
-                  'volume',
-                  'issue',
-                  'year',
-                );
-                if (in_array($field_name, $fields_to_mark)) {
-                  if (!isset($field['attributes']['class'])) {
-                    $field['#attributes']['class'] = array('error');
-                  }
-                  else {
-                    $field['#attributes']['class'][] = 'error';
-                  }
-                }
-              };
-              form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id]['title'], t('An empty intermediate may not have any populated children!'));
+          };
+          form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id]['caption'], t('An empty intermediate may not have any populated children!'));
+        }
+      }
+      elseif (empty($intermediate['caption']) || empty($intermediate['number'])) {
+        $fields_to_check = array(
+          'caption',
+          'number',
+        );
+        foreach ($fields_to_check as $field) {
+          if (empty($intermediate[$field])) {
+            form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field], t('A @type is required!', array('@type' => $field)));
+            if (!isset($form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['#attributes']['class'])) {
+              $form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['#attributes']['class'] = array('error');
+            }
+            else {
+              $form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['attributes']['class'][] = 'error';
             }
           }
         }
-        elseif (empty($intermediate['title']) && (!empty($intermediate['volume']) || !empty($intermediate['issue']) || !empty($intermediate['year']))) {
-          form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id]['title'], t('A title is required!'));
-          if (!isset($form['table_wrapper']['islandora_serial_object_intermediates'][$id]['title']['#attributes']['class'])) {
-            $form['table_wrapper']['islandora_serial_object_intermediates'][$id]['title']['#attributes']['class'] = array('error');
-          }
-          else {
-            $form['table_wrapper']['islandora_serial_object_intermediates'][$id]['title']['attributes']['class'][] = 'error';
-          }
+      }
+      $fields_to_check = array(
+        'caption',
+        'number',
+      );
+      foreach ($fields_to_check as $field) {
+        if (empty($intermediate[$field])) {
+          form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field], t('The @type field must not be empty!', array(
+            '@type' => $field,
+          )));
         }
       }
     }
@@ -234,7 +247,7 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
     $filtered_children = $form_state['islandora_serial_object_intermediates']['intermediates'];
     foreach ($form_state['islandora_serial_object_intermediates']['intermediates'] as $parent_id => $children) {
       foreach ($children as $id => $child) {
-        if (empty($child['title']) && empty($child['volume']) && empty($child['issue']) && empty($child['year'])) {
+        if (empty($child['caption']) && empty($child['number'])) {
           unset($filtered_children[$parent_id][$id]);
         }
       }

@@ -19,9 +19,12 @@
 function islandora_serial_object_build_intermediates(&$form, &$form_state, $type, AbstractObject $object = NULL) {
   if ($type == 'ingest') {
     $root = 0;
+    $ingest_object = islandora_ingest_form_get_object($form_state);
+    $intermediate_levels = json_decode($ingest_object['SERIAL-LEVELS']->content);
   }
   else {
     $root = $object->id;
+    $intermediate_levels = json_decode($object['SERIAL-LEVELS']->content);
   }
   // If the form state has already been built up, just use it.
   if (isset($form_state['islandora_serial_object_intermediates'])) {
@@ -46,8 +49,19 @@ function islandora_serial_object_build_intermediates(&$form, &$form_state, $type
   }
   $form['islandora_serial_object_intermediates']['#theme'] = 'islandora_serial_object_intermediates_table';
   if ($intermediates) {
-    islandora_serial_object_construct_markup($form['islandora_serial_object_intermediates'], $intermediates['intermediates'], $root);
+    islandora_serial_object_construct_markup($form['islandora_serial_object_intermediates'], $intermediates['intermediates'], $root, $intermediate_levels);
   }
+  // Add the JS for tableDrag event firing fun!
+  $module_path = drupal_get_path('module', 'islandora_serial_object');
+  $form['#attached']['js'] = array(
+    "$module_path/js/islandora_serial_object_tabledrag.js" => array(
+      'group' => JS_LIBRARY,
+    ),
+  );
+  $form['#attached']['js'][] = array(
+    'data' => array('islandoraSerialObjectIntermediateLevels' => $intermediate_levels),
+    'type' => 'setting',
+  );
 }
 
 /**
@@ -136,10 +150,14 @@ function islandora_serial_object_get_tree_for_form(&$children, $parent_id, $dept
  *     yet, determines rendering.
  * @param string $parent_id
  *   The pid (parent id) of where to start traversing.
+ * @param array $intermediate_levels
+ *   An array of the defined mapping of the intermediate levels containing:
+ *   -TODO: Comment this.
  */
-function islandora_serial_object_construct_markup(&$form, $children, $parent_id) {
+function islandora_serial_object_construct_markup(&$form, $children, $parent_id, $intermediate_levels) {
   if (isset($children[$parent_id])) {
     foreach ($children[$parent_id] as $child) {
+      $depth = isset($child['depth']) ? $child['depth'] : 0;
       $form[$child['id']] = array(
         'pid' => array(
           '#type' => 'hidden',
@@ -169,7 +187,7 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id)
         ),
         'depth' => array(
           '#type' => 'hidden',
-          '#default_value' => isset($child['depth']) ? $child['depth'] : 0,
+          '#default_value' => $depth,
         ),
         'ingested' => array(
           '#type' => 'value',
@@ -180,38 +198,33 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id)
           '#value' => isset($child['leaf']) ? $child['leaf'] : FALSE,
         ),
       );
-      if (!$child['ingested']) {
-        $form[$child['id']] += array(
-          'title' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['title']) ? $child['title'] : FALSE,
-          ),
-          'volume' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['volume']) ? $child['volume'] : FALSE,
-            '#size' => 55,
-          ),
-          'issue' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['volume']) ? $child['volume'] : FALSE,
-            '#size' => 55,
-          ),
-          'year' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['year']) ? $child['year'] : FALSE,
-            '#size' => 10,
-          ),
-        );
+      // Need to go grab existing values to populate...
+      $default_caption = FALSE;
+      if ($child['ingested']) {
+
       }
       else {
-        $form[$child['id']]['title'] = array(
-          '#markup' => l($child['title'], "islandora/object/{$child['id']}"),
-        );
+        if (isset($intermediate_levels->{$depth + 1})) {
+          $default_caption = $intermediate_levels->{$depth + 1}->caption;
+        }
       }
+      $form[$child['id']] += array(
+        'caption' => array(
+          '#type' => 'textfield',
+          '#default_value' => isset($child['caption']) ? $child['caption'] : $default_caption,
+          '#attributes' => array(
+            'class' => array('islandora-serial-object-caption'),
+          ),
+        ),
+        'number' => array(
+          '#type' => 'textfield',
+          '#default_value' => isset($child['number']) ? $child['number'] : FALSE,
+        ),
+      );
       if (isset($child['leaf']) && $child['leaf']) {
         $form[$child['id']]['#attributes']['class'][] = 'tabledrag-leaf';
       }
-      islandora_serial_object_construct_markup($form, $children, $child['id']);
+      islandora_serial_object_construct_markup($form, $children, $child['id'], $intermediate_levels);
     }
   }
 }
