@@ -140,7 +140,6 @@ function islandora_serial_object_ingest_section_page_callback(AbstractObject $ob
   $config = islandora_basic_collection_get_ingest_configuration($parent);
   $config['models'] = array('islandora:intermediateSerialCModelStub');
   $config['islandora_serial_object_intermediate_pdf_parent'] = $object->id;
-  dsm($config);
   return drupal_get_form('islandora_ingest_form', $config);
 }
 /**
@@ -217,3 +216,21 @@ function islandora_serial_object_set_pdf_position($pid, $position) {
 
   $relations->commitRelationships();
 }
+
+function islandora_serial_object_ingest_section_form($form, &$form_state){
+  $form = array(
+    'title' => array(
+      '#type' => 'textfield',
+      '#title' => t('Section Name'),
+      '#required' => true, 
+    )
+  );
+  return $form;
+}
+
+function islandora_serial_object_ingest_section_form_submit($form, &$form_state){
+  $obj = islandora_ingest_form_get_object($form_state);  
+  $obj->label = $form_state['values']['title'];
+  return $form;
+}
+

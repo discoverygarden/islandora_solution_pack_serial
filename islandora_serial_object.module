@@ -9,7 +9,7 @@ define('ISLANDORA_SERIAL_OBJECT_MANAGEMENT_PERMISSION', 'manage serial objects')
 
 // Predicates.
 define('ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE', 'sequence_position');
-define('ISLANDORA_SERIAL_OBJECT_eDF_PARENT_PREDICATE', 'isComponentOf');
+define('ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE', 'isComponentOf');
 
 // MODS xpaths for intermediate management interface.
 define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH', '/mods:mods/mods:titleInfo[1]');
@@ -283,27 +283,19 @@ function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps(array $
   }
 }
 /**
- * Implements hook_islandora_content_model_forms_form_associations().
- */
-function islandora_serial_object_islandora_intermediateserialcmodelstub_content_model_forms_form_associations() {
-  return array(
-    'islandora_s_form' => array(
-      'content_model' => 'islandora:intermediateSerialCModelStub',
-      'form_name' => 'Islandora Serial Object MODS form',
-      'dsid' => 'MODS',
-      'title_field' => array('titleInfo', 'title'),
-      'transform' => 'mods_to_dc.xsl',
-      'template' => FALSE,
-    ),
-  );
-}
-/**
  * Implements hook_islandora_ingest_steps().
  */
 function islandora_serial_object_islandora_intermediateserialcmodelstub_islandora_ingest_steps(array $form_state) {
   $shared_storage = &islandora_ingest_form_get_shared_storage($form_state);
   if (isset($shared_storage['islandora_serial_object_intermediate_pdf_parent'])) {
     return array(
+      'islandora_serial_object_ingest_section' => array(
+	'type' => 'form',
+	'weight' => 19,
+	'form_id' => 'islandora_serial_object_ingest_section_form',
+      	'module' => 'islandora_serial_object',
+	'file' => 'includes/pdf.form.inc',
+      ),
       'islandora_serial_object_pdf_ingest' => array(
         'type' => 'callback',
         'weight' => 20,
