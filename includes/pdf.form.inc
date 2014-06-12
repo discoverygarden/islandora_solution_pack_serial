@@ -123,7 +123,6 @@ function islandora_serial_object_ingest_pdf_page_callback(AbstractObject $object
   return drupal_get_form('islandora_ingest_form', $config);
 }
 
- 
 /**
  * Page callback for ingesting a section hub on an intermediate serial object.
  *
@@ -216,21 +215,31 @@ function islandora_serial_object_set_pdf_position($pid, $position) {
 
   $relations->commitRelationships();
 }
-
-function islandora_serial_object_ingest_section_form($form, &$form_state){
+/**
+ * Ingest step callback to name an object.
+ *
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_ingest_section_form($form, &$form_state) {
   $form = array(
     'title' => array(
       '#type' => 'textfield',
       '#title' => t('Section Name'),
-      '#required' => true, 
-    )
+      '#required' => TRUE,
+    ),
   );
   return $form;
 }
 
-function islandora_serial_object_ingest_section_form_submit($form, &$form_state){
-  $obj = islandora_ingest_form_get_object($form_state);  
+/**
+ * Ingest step callback to name an object .
+ *
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_ingest_section_form_submit($form, &$form_state) {
+  $obj = islandora_ingest_form_get_object($form_state);
   $obj->label = $form_state['values']['title'];
-  return $form;
 }
 

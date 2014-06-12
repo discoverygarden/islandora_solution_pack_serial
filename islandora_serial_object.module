@@ -46,14 +46,14 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
   $intermediate_content_model->owner = 'fedoraAdmin';
   $intermediate_content_model->label = 'Islandora Serial Object Intermediate Content Model';
   $intermediate_content_model->models = 'fedora-system:ContentModel-3.0';
-  // Intermediate stub object for categories
+  // Intermediate stub object for categories.
   $intermediate_content_model_s = $connection->repository->constructObject('islandora:intermediateSerialCModelStub');
   $intermediate_content_model_s->owner = 'fedoraAdmin';
   $intermediate_content_model_s->label = 'Islandora Serial Object Intermediate Category Content Model';
   $intermediate_content_model_s->models = 'fedora-system:ContentModel-3.0';
   $intermediate_content_model_s->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
 
-// DS-COMPOSITE-MODEL datastream.
+  // DS-COMPOSITE-MODEL datastream.
   $datastream = $intermediate_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
   $datastream->label = 'DS-COMPOSITE-MODEL';
   $datastream->mimetype = 'text/xml';
@@ -85,7 +85,8 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
       'objects' => array(
         $serial_content_model,
         $intermediate_content_model,
-	$intermediate_content_model_s,
+        $intermediate_content_model_s,
+
         $serial_collection,
       ),
     ),
@@ -301,11 +302,11 @@ function islandora_serial_object_islandora_intermediateserialcmodelstub_islandor
   if (isset($shared_storage['islandora_serial_object_intermediate_pdf_parent'])) {
     return array(
       'islandora_serial_object_ingest_section' => array(
-	'type' => 'form',
-	'weight' => 19,
-	'form_id' => 'islandora_serial_object_ingest_section_form',
-      	'module' => 'islandora_serial_object',
-	'file' => 'includes/pdf.form.inc',
+        'type' => 'form',
+        'weight' => 19,
+        'form_id' => 'islandora_serial_object_ingest_section_form',
+        'module' => 'islandora_serial_object',
+        'file' => 'includes/pdf.form.inc',
       ),
       'islandora_serial_object_pdf_ingest' => array(
         'type' => 'callback',
