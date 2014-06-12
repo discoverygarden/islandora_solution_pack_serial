@@ -242,4 +242,3 @@ function islandora_serial_object_ingest_section_form_submit($form, &$form_state)
   $obj = islandora_ingest_form_get_object($form_state);
   $obj->label = $form_state['values']['title'];
 }
-

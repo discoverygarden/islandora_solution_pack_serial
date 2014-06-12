@@ -86,7 +86,6 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
         $serial_content_model,
         $intermediate_content_model,
         $intermediate_content_model_s,
-
         $serial_collection,
       ),
     ),
