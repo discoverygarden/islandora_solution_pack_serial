@@ -9,7 +9,6 @@
                 settings.islandoraSerialObjectModifiedIntermediates = [];
             }
             else {
-                console.log(settings.islandoraSerialObjectModifiedIntermediates);
                 $.each(settings.islandoraSerialObjectModifiedIntermediates, function(index, value) {
                     $(':input[name="' + value + '"]').addClass('islandora-serial-object-modified-intermediate');
                 });

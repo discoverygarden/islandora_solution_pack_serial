@@ -12,16 +12,10 @@ define('ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE', 'sequence_position');
 define('ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE', 'isComponentOf');
 
 // MODS xpaths for intermediate management interface.
-define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH', '/mods:mods/mods:titleInfo[1]');
-define('ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:title');
-// Always use first values because we can only use one.
-define('ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:partNumber[1]');
-define('ISLANDORA_SERIAL_OBJECT_MODS_ISSUE_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH . '/mods:partName[1]');
-// Date is stored as a range, loss of granularity is possible if modifying
-// through management interface is enabled.
-define('ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH', '/mods:mods/mods:originInfo[1]');
-define('ISLANDORA_SERIAL_OBJECT_MODS_YEAR_START_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH . '/mods:dateIssued[@point=\'start\']');
-define('ISLANDORA_SERIAL_OBJECT_MODS_YEAR_END_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH . '/mods:dateIssued[@point=\'end\']');
+define('ISLANDORA_SERIAL_OBJECT_MODS_PART_XPATH', '/mods:mods/mods:relatedItem[@type="host"]/mods:part');
+define('ISLANDORA_SERIAL_OBJECT_MODS_DETAIL_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_PART_XPATH . '/mods:detail[@type="!replacement"]');
+define('ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_DETAIL_XPATH . '/mods:caption');
+define('ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH', ISLANDORA_SERIAL_OBJECT_MODS_DETAIL_XPATH . '/mods:number');
 
 /**
  * Implements hook_islandora_required_objects().
@@ -197,6 +191,15 @@ function islandora_serial_object_menu() {
     'access callback' => 'islandora_serial_object_intermediate_management_access',
     'access arguments' => array(2),
     'file' => 'includes/manage.inc',
+  );
+  $items['admin/islandora/solution_pack_config/serial_object'] = array(
+    'title' => 'Serial Object Solution Pack',
+    'description' => 'Configuration for the Serial Object solution pack.',
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('islandora_serial_object_admin_settings'),
+    'file' => 'includes/admin.form.inc',
+    'type' => MENU_NORMAL_ITEM,
   );
   return $items;
 }
