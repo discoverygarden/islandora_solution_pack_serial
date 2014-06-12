@@ -46,6 +46,13 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
   $intermediate_content_model->owner = 'fedoraAdmin';
   $intermediate_content_model->label = 'Islandora Serial Object Intermediate Content Model';
   $intermediate_content_model->models = 'fedora-system:ContentModel-3.0';
+  // Intermediate stub object for categories.
+  $intermediate_content_model_s = $connection->repository->constructObject('islandora:intermediateSerialCModelStub');
+  $intermediate_content_model_s->owner = 'fedoraAdmin';
+  $intermediate_content_model_s->label = 'Islandora Serial Object Intermediate Category Content Model';
+  $intermediate_content_model_s->models = 'fedora-system:ContentModel-3.0';
+  $intermediate_content_model_s->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+
   // DS-COMPOSITE-MODEL datastream.
   $datastream = $intermediate_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');
   $datastream->label = 'DS-COMPOSITE-MODEL';
@@ -78,6 +85,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
       'objects' => array(
         $serial_content_model,
         $intermediate_content_model,
+        $intermediate_content_model_s,
         $serial_collection,
       ),
     ),
@@ -184,6 +192,15 @@ function islandora_serial_object_menu() {
     'page arguments' => array(2),
     'file' => 'includes/pdf.form.inc',
   );
+  $items['islandora/object/%islandora_object/manage/serial-pdf-management/add_section'] = array(
+    'title' => 'Add a Section',
+    'access callback' => 'islandora_serial_object_pdf_ingest_access',
+    'access arguments' => array(2),
+    'type' => MENU_LOCAL_ACTION,
+    'page callback' => 'islandora_serial_object_ingest_section_page_callback',
+    'page arguments' => array(2),
+    'file' => 'includes/pdf.form.inc',
+  );
   $items['islandora/object/%islandora_object/manage/intermediate-management'] = array(
     'title' => 'Intermediate Management',
     'type' => MENU_LOCAL_TASK,
@@ -259,6 +276,37 @@ function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps(array $
   $shared_storage = &islandora_ingest_form_get_shared_storage($form_state);
   if (isset($shared_storage['islandora_serial_object_intermediate_pdf_parent'])) {
     return array(
+      'islandora_serial_object_pdf_ingest' => array(
+        'type' => 'callback',
+        'weight' => 20,
+        'module' => 'islandora_serial_object',
+        'do_function' => array(
+          'function' => 'islandora_serial_object_associate_pdf',
+          'args' => array($shared_storage['islandora_serial_object_intermediate_pdf_parent']),
+        ),
+        'undo_function' => array(
+          'function' => 'islandora_serial_object_unassociate_pdf',
+          'args' => array(),
+        ),
+        'file' => 'includes/pdf.form.inc',
+      ),
+    );
+  }
+}
+/**
+ * Implements hook_islandora_ingest_steps().
+ */
+function islandora_serial_object_islandora_intermediateserialcmodelstub_islandora_ingest_steps(array $form_state) {
+  $shared_storage = &islandora_ingest_form_get_shared_storage($form_state);
+  if (isset($shared_storage['islandora_serial_object_intermediate_pdf_parent'])) {
+    return array(
+      'islandora_serial_object_ingest_section' => array(
+        'type' => 'form',
+        'weight' => 19,
+        'form_id' => 'islandora_serial_object_ingest_section_form',
+        'module' => 'islandora_serial_object',
+        'file' => 'includes/pdf.form.inc',
+      ),
       'islandora_serial_object_pdf_ingest' => array(
         'type' => 'callback',
         'weight' => 20,
