@@ -541,11 +541,10 @@ SELECT ?sequence_number ?obj ?pdf ?pdf_label FROM <#ri> WHERE {
   ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateCModel> .
   ?pdf <$islandora_namespace{$pdf_parent_predicate}> ?obj ;
        <fedora-model:label> ?pdf_label ;
-  <$islandora_namespace{$sequence_predicate}> ?sequence_number 
+  <$islandora_namespace{$sequence_predicate}> ?sequence_number
   }
   ORDER BY ASC(?sequence_number)
 EOQ;
-  dsm($pdf_child_query);
   $results = $connection->repository->ri->sparqlQuery($pdf_child_query);
   $leaf_objects = array();
   foreach ($results as $result) {
@@ -571,18 +570,17 @@ function islandora_serial_object_get_stub_child_objects() {
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $pdf_child_query = <<<EOQ
 SELECT ?obj ?label FROM <#ri> WHERE {
-  ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateSerialCModelStub> ; 
+  ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateSerialCModelStub> ;
        <fedora-model:label> ?label
 }
 EOQ;
   $results = $connection->repository->ri->sparqlQuery($pdf_child_query);
   $leaf_objects = array();
   foreach ($results as $result) {
-    $leaf_objects[$result['obj']['value']] = array(  
+    $leaf_objects[$result['obj']['value']] = array(
       'pid' => $result['obj']['value'],
       'label' => $result['label']['value'],
     );
-    
   }
   return $leaf_objects;
 }
@@ -606,17 +604,18 @@ EOQ;
 function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
   // Need to get the correct depth and ordering on our existing elements.
   $intermediates['intermediates'] = islandora_serial_object_get_children($object->id);
- // Need to get the correct depth and ordering on our existing elements.
+  // Need to get the correct depth and ordering on our existing elements.
   $intermediates = islandora_serial_object_sort_intermediates($intermediates, $object->id);
   $json_data = array();
   $leafs = islandora_serial_object_get_pdf_child_objects();
   $stubs = islandora_serial_object_get_stub_child_objects();
   foreach ($intermediates['intermediates'] as $children) {
     foreach ($children as $values) {
-      if(isset($stubs[$values['id']])){
-	$type = 'stub';
-      } else {
-	$type = $values['leaf'] ? 'leaf' : 'branch' ;
+      if (isset($stubs[$values['id']])) {
+        $type = 'stub';
+      }
+      else {
+        $type = $values['leaf'] ? 'leaf' : 'branch';
       }
       $json_data[] = array(
         'id' => $values['id'],
@@ -627,10 +626,11 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
       if ($values['leaf']) {
         if (isset($leafs[$values['id']])) {
           foreach ($leafs[$values['id']] as $pdf_child) {
-             if(isset($stubs[$pdf_child['pid']])){
-               $type = 'stub';
-             } else {
-               $type = 'pdf' ;
+            if (isset($stubs[$pdf_child['pid']])) {
+              $type = 'stub';
+            } 
+            else {
+              $type = 'pdf' ;
             }
             $json_data[] = array(
               'id' => $pdf_child['pid'],
