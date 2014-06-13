@@ -13,10 +13,8 @@
  *   an array containing:
  *     - children: An array containing:
  *       - children: An array like this one (recursion).
- *       - title: A string of a MODS title.
- *       - volume: A string representing the volume for MODS.
- *       - issue: A string representing the issue for MODS.
- *       - year: A string representing the year for MODS.
+ *       - caption: A string describing the caption.
+ *       - number: A string identifying the number.
  */
 function islandora_serial_object_serial_batch($object_tree) {
   $operations = islandora_serial_object_serial_batch_generate_ops($object_tree);
@@ -50,6 +48,7 @@ function islandora_serial_object_serial_batch($object_tree) {
  */
 function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object_info, &$context) {
   module_load_include('inc', 'islandora', 'includes/utilities');
+  module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
   // Handle results setup on first op.
   if (!isset($context['results']['tree_ids_to_pids'])) {
     $context['results']['tree_ids_to_pids'] = array();
@@ -89,79 +88,41 @@ function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://www.loc.gov/mods/v3"
   xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-4.xsd"
-    version="3.4"
-/>
+    version="3.4">
+  <relatedItem type="host">
+    <part>
+      <detail type="{$object_info['type']}">
+         <caption/>
+         <number/>
+      </detail>
+     </part>
+  </relatedItem>
+</mods>
 EOXML;
-    $mods_doc->loadXML($mods_string);
-    $mods_xpath = new DOMXPath($mods_doc);
   }
   else {
-    // XXX: This condition will never hit but is likely to be used when
-    // a design is fully hashed out.
-    if (!$object_info['ingested']) {
-      $mods_datastream = $object['MODS'];
-      $mods_doc->loadXML($object['MODS']->content);
-      $mods_xpath = new DOMXPath($mods_doc);
-      $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-      // Remove MODS data if necessary.
-      $xpaths_to_remove = array(
-        ISLANDORA_SERIAL_OBJECT_MODS_TITLE_XPATH,
-        ISLANDORA_SERIAL_OBJECT_MODS_VOLUME_XPATH,
-        ISLANDORA_SERIAL_OBJECT_MODS_ISSUE_XPATH,
-        ISLANDORA_SERIAL_OBJECT_MODS_YEAR_START_XPATH,
-        ISLANDORA_SERIAL_OBJECT_MODS_YEAR_END_XPATH,
-      );
-      foreach ($xpaths_to_remove as $xpath) {
-        $elements = $mods_xpath->query($xpath);
-        if ($elements->length) {
-          $item = $elements->item(0);
-          $item->parentNode->removeChild($item);
-        }
-      }
-      // Access elements to add to.
-      $mods_origin_infos = $mods_xpath->query(ISLANDORA_SERIAL_OBJECT_MODS_ORIGIN_INFO_XPATH);
-      $mods_title_infos = $mods_xpath->query(ISLANDORA_SERIAL_OBJECT_MODS_TITLE_INFO_XPATH);
-    }
+    $mods_datastream = $object['MODS'];
+    $mods_string = $object['MODS']->content;
   }
-  // XXX: This condition will never hit but is likely to be used when
-  // a design is fully hashed out.
-  if (!$object_info['ingested']) {
-    // Get or create elements to work on.
-    if (isset($mods_title_infos) && $mods_origin_infos->length) {
-      $mods_origin_info = $mods_origin_infos->item(0);
-    }
-    else {
-      $mods_origin_info = $mods_doc->createElement('originInfo');
-      $mods_doc->documentElement->appendChild($mods_origin_info);
-    }
-    if (isset($mods_title_infos) && $mods_title_infos->length) {
-      $mods_title_info = $mods_title_infos->item(0);
-    }
-    else {
-      $mods_title_info = $mods_doc->createElement('titleInfo');
-      $mods_doc->documentElement->appendChild($mods_title_info);
-    }
-
-    // Add MODS data.
-    $title_element = $mods_doc->createElement('title', $object_info['title']);
-    $volume_element = $mods_doc->createElement('partNumber', $object_info['volume']);
-    $issue_element = $mods_doc->createElement('partName', $object_info['issue']);
-    $year_start_element = $mods_doc->createElement('dateIssued', $object_info['year']);
-    $year_end_element = $mods_doc->createElement('dateIssued', $object_info['year']);
-
-    $year_start_element->setAttribute('point', 'start');
-    $year_end_element->setAttribute('point', 'end');
-    $year_start_element->setAttribute('encoding', 'w3cdtf');
-    $year_end_element->setAttribute('encoding', 'w3cdtf');
-
-    $mods_title_info->appendChild($title_element);
-    $mods_title_info->appendChild($volume_element);
-    $mods_title_info->appendChild($issue_element);
-    $mods_origin_info->appendChild($year_start_element);
-    $mods_origin_info->appendChild($year_end_element);
-
-    $mods_datastream->content = $mods_doc->saveXML();
+  $mods_doc->loadXML($mods_string);
+  $mods_xpath = new DOMXPath($mods_doc);
+  $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+  $caption_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH, $object_info['type']);
+  $mods_caption_xpath = $mods_xpath->query($caption_xpath);
+  if ($mods_caption_xpath->length) {
+    $mods_caption = $mods_caption_xpath->item(0);
+    $mods_caption->nodeValue = $object_info['caption'];
   }
+  $number_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH, $object_info['type']);
+  $mods_number_xpath = $mods_xpath->query($number_xpath);
+  if ($mods_number_xpath->length) {
+    $mods_number = $mods_number_xpath->item(0);
+    $mods_number->nodeValue = $object_info['number'];
+  }
+  $mods_datastream->content = $mods_doc->saveXML();
+
+  // Update the label.
+  $object->label = "{$object_info['caption']} {$object_info['number']}";
   $object->relationships->autoCommit = FALSE;
   $object->relationships->remove(
     FEDORA_RELS_EXT_URI,
@@ -193,7 +154,6 @@ EOXML;
   }
   if ($object_is_new) {
     $object->models = 'islandora:intermediateCModel';
-    $object->label = $object_info['title'];
     islandora_add_object($object);
   }
 }
@@ -207,10 +167,8 @@ EOXML;
  *   an array containing:
  *     - children: An array containing:
  *       - children: An array like this one (recursion).
- *       - title: A string of a MODS title.
- *       - volume: A string representing the volume for MODS.
- *       - issue: A string representing the issue for MODS.
- *       - year: A string representing the year for MODS.
+ *       - caption: A string describing the caption.
+ *       - number: A string identifying the number.
  *  ID's must be unique across all children in the tree.
  * @param NULL|string $parent_pid
  *   The current parent PID of the tree or NULL if it's the root object.

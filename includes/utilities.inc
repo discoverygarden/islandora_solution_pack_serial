@@ -19,9 +19,12 @@
 function islandora_serial_object_build_intermediates(&$form, &$form_state, $type, AbstractObject $object = NULL) {
   if ($type == 'ingest') {
     $root = 0;
+    $ingest_object = islandora_ingest_form_get_object($form_state);
+    $intermediate_levels = json_decode($ingest_object['SERIAL-LEVELS']->content, TRUE);
   }
   else {
     $root = $object->id;
+    $intermediate_levels = json_decode($object['SERIAL-LEVELS']->content, TRUE);
   }
   // If the form state has already been built up, just use it.
   if (isset($form_state['islandora_serial_object_intermediates'])) {
@@ -45,9 +48,21 @@ function islandora_serial_object_build_intermediates(&$form, &$form_state, $type
     }
   }
   $form['islandora_serial_object_intermediates']['#theme'] = 'islandora_serial_object_intermediates_table';
+  $form['islandora_serial_object_intermediates']['#levels'] = count($intermediate_levels);
   if ($intermediates) {
-    islandora_serial_object_construct_markup($form['islandora_serial_object_intermediates'], $intermediates['intermediates'], $root);
+    islandora_serial_object_construct_markup($form['islandora_serial_object_intermediates'], $intermediates['intermediates'], $root, $intermediate_levels);
   }
+  // Add the JS for tableDrag event firing fun!
+  $module_path = drupal_get_path('module', 'islandora_serial_object');
+  $form['#attached']['js'] = array(
+    "$module_path/js/islandora_serial_object_tabledrag.js" => array(
+      'group' => JS_LIBRARY,
+    ),
+  );
+  $form['#attached']['js'][] = array(
+    'data' => array('islandoraSerialObjectIntermediateLevels' => $intermediate_levels),
+    'type' => 'setting',
+  );
 }
 
 /**
@@ -60,10 +75,8 @@ function islandora_serial_object_build_intermediates(&$form, &$form_state, $type
  *   -intermediates: An array of associative arrays where the key is the pid
  *   (parent id) of the intermediate. They key of Each associative array is the
  *   id of the intermediate and contains:
- *     -title: A string describing the object.
- *     -volume: A string identifying the volume.
- *     -issue: A string identifying the issue.
- *     -year: A string identifying the year.
+ *     -caption: A string describing the caption.
+ *     -number: A string identifying the number.
  *     -pid: A string that stores reference to which parent the intermediate is
  *     part of.
  *     -id: A unique string used for identification.
@@ -88,10 +101,8 @@ function islandora_serial_object_sort_intermediates($intermediates, $root = 0) {
  *   An array of associative arrays where the key is the pid
  *   (parent id) of the intermediate. They key of Each associative array is the
  *   id of the intermediate and contains:
- *     -title: A string describing the object.
- *     -volume: A string identifying the volume.
- *     -issue: A string identifying the issue.
- *     -year: A string identifying the year.
+ *     -caption: A string describing the caption.
+ *     -number: A string identifying the number.
  *     -pid: A string that stores reference to which parent the intermediate is
  *     part of.
  *     -id: A unique string used for identification.
@@ -122,10 +133,8 @@ function islandora_serial_object_get_tree_for_form(&$children, $parent_id, $dept
  *   An array of associative arrays where the key is the pid
  *   (parent id) of the intermediate. They key of each associative array is the
  *   id of the intermediate and contains:
- *     -title: A string describing the object.
- *     -volume: A string identifying the volume.
- *     -issue: A string identifying the issue.
- *     -year: A string identifying the year.
+ *     -caption: A string describing the caption.
+ *     -number: A string identifying the number.
  *     -pid: A string that stores reference to which parent the intermediate is
  *     part of.
  *     -id: A unique string used for identification.
@@ -136,10 +145,17 @@ function islandora_serial_object_get_tree_for_form(&$children, $parent_id, $dept
  *     yet, determines rendering.
  * @param string $parent_id
  *   The pid (parent id) of where to start traversing.
+ * @param array $intermediate_levels
+ *   An array of the defined mapping of the intermediate levels where the key is
+ *   the level. The array contains:
+ *   -level: An integer denoting the level this mapping relates to.
+ *   -type: A string denoting the type for this level.
+ *   -caption: A string denoting the caption for this level.
  */
-function islandora_serial_object_construct_markup(&$form, $children, $parent_id) {
+function islandora_serial_object_construct_markup(&$form, $children, $parent_id, $intermediate_levels) {
   if (isset($children[$parent_id])) {
     foreach ($children[$parent_id] as $child) {
+      $depth = isset($child['depth']) ? $child['depth'] : 0;
       $form[$child['id']] = array(
         'pid' => array(
           '#type' => 'hidden',
@@ -169,7 +185,7 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id)
         ),
         'depth' => array(
           '#type' => 'hidden',
-          '#default_value' => isset($child['depth']) ? $child['depth'] : 0,
+          '#default_value' => $depth,
         ),
         'ingested' => array(
           '#type' => 'value',
@@ -180,38 +196,28 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id)
           '#value' => isset($child['leaf']) ? $child['leaf'] : FALSE,
         ),
       );
-      if (!$child['ingested']) {
-        $form[$child['id']] += array(
-          'title' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['title']) ? $child['title'] : FALSE,
+      $form[$child['id']] += array(
+        'caption' => array(
+          '#type' => 'textfield',
+          '#default_value' => isset($child['caption']) ? $child['caption'] : $intermediate_levels[$depth + 1]['caption'],
+          '#attributes' => array(
+            'class' => array('islandora-serial-object-caption'),
           ),
-          'volume' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['volume']) ? $child['volume'] : FALSE,
-            '#size' => 55,
-          ),
-          'issue' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['volume']) ? $child['volume'] : FALSE,
-            '#size' => 55,
-          ),
-          'year' => array(
-            '#type' => 'textfield',
-            '#default_value' => isset($child['year']) ? $child['year'] : FALSE,
-            '#size' => 10,
-          ),
-        );
-      }
-      else {
-        $form[$child['id']]['title'] = array(
-          '#markup' => l($child['title'], "islandora/object/{$child['id']}"),
-        );
-      }
-      if (isset($child['leaf']) && $child['leaf']) {
+        ),
+        'number' => array(
+          '#type' => 'textfield',
+          '#default_value' => isset($child['number']) ? $child['number'] : FALSE,
+        ),
+      );
+      if ((isset($child['leaf']) && $child['leaf']) || count($intermediate_levels) == 1) {
         $form[$child['id']]['#attributes']['class'][] = 'tabledrag-leaf';
       }
-      islandora_serial_object_construct_markup($form, $children, $child['id']);
+      // If the value of the caption was modified, the default value should not
+      // be applied when the row is re-ordered.
+      if (isset($child['default_edit']) && !$child['default_edit']) {
+        $form[$child['id']]['caption']['#attributes']['class'][] = 'islandora-serial-object-modified-intermediate';
+      }
+      islandora_serial_object_construct_markup($form, $children, $child['id'], $intermediate_levels);
     }
   }
 }
@@ -221,22 +227,18 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id)
  *
  * @param array $a
  *   An array describing an intermediate object containing:
- *   -title: A string describing the object.
- *   -volume: A string identifying the volume.
- *   -issue: A string identifying the issue.
- *   -year: A string identifying the year.
+ *   -caption: A string describing the caption.
+ *   -number: A string identifying the number.
  *   -pid: A string that stores reference to which parent the intermediate is
- *    part of.
+ *   part of.
  *   -id: A unique string used for identification.
  *   -weight: A string referencing how far down in the order the intermedaite
  *   is.
- *   -depth: A string describing how far "idented" the object is.
+ *   - depth: A string describing how far "idented" the object is.
  * @param array $b
  *   An array describing an intermediate object containing:
- *   -title: A string describing the object.
- *   -volume: A string identifying the volume.
- *   -issue: A string identifying the issue.
- *   -year: A string identifying the year.
+ *   -caption: A string describing the caption.
+ *   -number: A string identifying the number.
  *   -pid: A string that stores reference to which parent the intermediate is
  *    part of.
  *   -id: A unique string used for identification.
@@ -262,10 +264,8 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
  *   An array of associative arrays where the key is the pid
  *   (parent id) of the intermediate. They key of each associative array is the
  *   id of the intermediate and contains:
- *     -title: A string describing the object.
- *     -volume: A string identifying the volume.
- *     -issue: A string identifying the issue.
- *     -year: A string identifying the year.
+ *     -caption: A string describing the caption.
+ *     -number: A string identifying the number.
  *     -pid: A string that stores reference to which parent the intermediate is
  *     part of.
  *     -id: A unique string used for identification.
@@ -287,10 +287,8 @@ function islandora_serial_object_stable_drupal_sort_weight($a, $b) {
  *   an array containing:
  *     - children: An array containing:
  *       - children: An array like this one (recursion).
- *       - title: A string of a MODS title.
- *       - volume: A string representing the volume for MODS.
- *       - issue: A string representing the issue for MODS.
- *       - year: A string representing the year for MODS.
+ *       - caption: A string describing the caption.
+ *       - number: A string identifying the number.
  */
 function islandora_serial_object_get_intermediates_as_tree($intermediates, $root_pid, $ingest) {
   if (empty($intermediates)) {
@@ -374,7 +372,8 @@ function islandora_serial_object_get_children($parent_pid, $tree_structure = FAL
       islandora_serial_object_build_flat_structure_from_tree(
         $tree[$parent_pid],
         array_map('islandora_serial_object_format_values_for_flat_structure', $flat_structure),
-        $processed_results
+        $processed_results,
+        $parent_pid
       );
     }
   }
@@ -400,15 +399,34 @@ function islandora_serial_object_get_children($parent_pid, $tree_structure = FAL
  * @param array $results
  *   A passed by reference array that is used to retain values as the flat
  *   structure is built up for the form.
+ * @param string $parent_pid
+ *   The pid of the root serial object.
+ * @param int $depth
+ *   The current depth of the tree.
  */
-function islandora_serial_object_build_flat_structure_from_tree($tree, $flat_structure, &$results) {
+function islandora_serial_object_build_flat_structure_from_tree($tree, $flat_structure, &$results, $parent_pid, $depth = 1) {
+  $levels =& drupal_static(__FUNCTION__, NULL);
+  if ($levels === NULL) {
+    $parent_object = islandora_object_load($parent_pid);
+    $levels = json_decode($parent_object['SERIAL-LEVELS']->content, TRUE);
+  }
   foreach ($tree as $branch => $vals) {
     if (is_array($vals)) {
       $results[$flat_structure[$branch]['pid']][$branch] = $flat_structure[$branch];
-      islandora_serial_object_build_flat_structure_from_tree($vals, $flat_structure, $results);
+      $mods_data = islandora_serial_object_retrieve_mods_data($branch, $levels[$depth]['type']);
+      $default_edit = ($mods_data['caption'] == $levels[$depth]['caption']) ? TRUE : FALSE;
+      $results[$flat_structure[$branch]['pid']][$branch]['caption'] = $mods_data['caption'];
+      $results[$flat_structure[$branch]['pid']][$branch]['number'] = $mods_data['number'];
+      $results[$flat_structure[$branch]['pid']][$branch]['default_edit'] = $default_edit;
+      islandora_serial_object_build_flat_structure_from_tree($vals, $flat_structure, $results, $parent_pid, $depth + 1);
     }
     else {
+      $mods_data = islandora_serial_object_retrieve_mods_data($vals, $levels[$depth]['type']);
+      $default_edit = ($mods_data['caption'] == $levels[$depth]['caption']) ? TRUE : FALSE;
       $results[$flat_structure[$vals]['pid']][$vals] = $flat_structure[$vals];
+      $results[$flat_structure[$vals]['pid']][$vals]['caption'] = $mods_data['caption'];
+      $results[$flat_structure[$vals]['pid']][$vals]['number'] = $mods_data['number'];
+      $results[$flat_structure[$vals]['pid']][$vals]['default_edit'] = $default_edit;
     }
   }
 }
@@ -652,4 +670,58 @@ function islandora_serial_object_get_tree_view(AbstractObject $object) {
     'type' => 'setting',
   );
   return $form;
+}
+
+/**
+ * Helper function to replace a portion of a dynamic yet constant XPath.
+ *
+ * @param string $xpath
+ *   An XPath.
+ * @param string $replacement
+ *   The replacement value for the XPath.
+ *
+ * @return string
+ *   The replaced XPath.
+ */
+function islandora_serial_object_replace_xpath($xpath, $replacement) {
+  return format_string($xpath, array(
+    '!replacement' => $replacement,
+  ));
+}
+
+/**
+ * Helper function to retrieve MODS data from an object.
+ *
+ * @param string $id
+ *   The pid of the Fedora object to be parsed.
+ * @param string $type
+ *   The type value to be used for XPath replacing.
+ *
+ * @return array
+ *   An array containing:
+ *   -caption: A string with the populated caption value.
+ *   -number: A string the populated number value.
+ */
+function islandora_serial_object_retrieve_mods_data($id, $type) {
+  $data = array();
+  $object = islandora_object_load($id);
+  $mods_string = $object['MODS']->content;
+  $mods_doc = new DOMDocument();
+  $mods_doc->loadXML($mods_string);
+  $mods_xpath = new DOMXPath($mods_doc);
+  $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+  $caption_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH, $type);
+  $mods_caption_xpath = $mods_xpath->query($caption_xpath);
+  if ($mods_caption_xpath->length) {
+    $mods_caption = $mods_caption_xpath->item(0);
+    $data['caption'] = $mods_caption->nodeValue;
+  }
+
+  $number_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH, $type);
+  $mods_number_xpath = $mods_xpath->query($number_xpath);
+  if ($mods_number_xpath->length) {
+    $mods_number = $mods_number_xpath->item(0);
+    $data['number'] = $mods_number->nodeValue;
+  }
+  return $data;
 }
