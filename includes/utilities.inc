@@ -533,15 +533,19 @@ EOQ;
  */
 function islandora_serial_object_get_pdf_child_objects() {
   $connection = islandora_get_tuque_connection();
+  $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $pdf_child_query = <<<EOQ
-SELECT ?obj ?pdf ?pdf_label FROM <#ri> WHERE {
+SELECT ?sequence_number ?obj ?pdf ?pdf_label FROM <#ri> WHERE {
   ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateCModel> .
   ?pdf <$islandora_namespace{$pdf_parent_predicate}> ?obj ;
-       <fedora-model:label> ?pdf_label
-}
+       <fedora-model:label> ?pdf_label ;
+  <$islandora_namespace{$sequence_predicate}> ?sequence_number 
+  }
+  ORDER BY ASC(?sequence_number)
 EOQ;
+  dsm($pdf_child_query);
   $results = $connection->repository->ri->sparqlQuery($pdf_child_query);
   $leaf_objects = array();
   foreach ($results as $result) {
@@ -602,7 +606,7 @@ EOQ;
 function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
   // Need to get the correct depth and ordering on our existing elements.
   $intermediates['intermediates'] = islandora_serial_object_get_children($object->id);
-  // Need to get the correct depth and ordering on our existing elements.
+ // Need to get the correct depth and ordering on our existing elements.
   $intermediates = islandora_serial_object_sort_intermediates($intermediates, $object->id);
   $json_data = array();
   $leafs = islandora_serial_object_get_pdf_child_objects();
@@ -639,7 +643,6 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
       }
     }
   }
-  dsm($json_data);
   return array(
     'data' => $json_data,
     'types' => array(
