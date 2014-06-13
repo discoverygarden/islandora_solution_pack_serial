@@ -18,10 +18,8 @@ function theme_islandora_serial_object_intermediates_table(array $variables) {
     $rows[] = array(
       'data' => array(
         // Include our indentation.
-        $indent . drupal_render($form[$id]['title']),
-        drupal_render($form[$id]['volume']),
-        drupal_render($form[$id]['issue']),
-        drupal_render($form[$id]['year']),
+        $indent . drupal_render($form[$id]['caption']),
+        drupal_render($form[$id]['number']),
         drupal_render($form[$id]['weight']),
         array(
           'data' => drupal_render($form[$id]['id']),
@@ -37,10 +35,8 @@ function theme_islandora_serial_object_intermediates_table(array $variables) {
   }
 
   $header = array(
-    t('Title'),
-    t('Volume'),
-    t('Issue'),
-    t('Year'),
+    t('Caption'),
+    t('Number'),
     t('Weight'),
     array(
       'data' => t('ID'),
@@ -59,7 +55,7 @@ function theme_islandora_serial_object_intermediates_table(array $variables) {
     'empty' => t('No intermediate children on the serial!'),
   ));
   $output .= drupal_render_children($form);
-  drupal_add_tabledrag($table_id, 'match', 'parent', 'islandora-serial-object-intermediate-pid', 'islandora-serial-object-intermediate-pid', 'islandora-serial-object-intermediate-id', FALSE);
+  drupal_add_tabledrag($table_id, 'match', 'parent', 'islandora-serial-object-intermediate-pid', 'islandora-serial-object-intermediate-pid', 'islandora-serial-object-intermediate-id', FALSE, $form['#levels'] - 1);
   drupal_add_tabledrag($table_id, 'order', 'sibling', 'islandora-serial-object-intermediate-weight');
   drupal_add_css(
     drupal_get_path('module', 'islandora_serial_object') .

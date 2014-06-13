@@ -129,13 +129,17 @@ function islandora_serial_object_create_fields_for_intermediates_form_submit($fo
   $object = islandora_ingest_form_get_object($form_state);
   $level_data = array();
   foreach ($form_state['values']['intermediate_table']['rows'] as $row) {
-    $level_data[] = array(
+    $level_data[$row['level_value']] = array(
       'level' => $row['level_value'],
       'type' => $row['type'],
       'caption' => $row['caption'],
     );
+    // Update the form state in case we previoius back.
+    $form_state['islandora_serial_object_intermediate_levels'][$row['level_value']]['level'] = $row['level_value'];
+    $form_state['islandora_serial_object_intermediate_levels'][$row['level_value']]['type'] = $row['type'];
+    $form_state['islandora_serial_object_intermediate_levels'][$row['level_value']]['caption'] = $row['caption'];
   }
-  $json_levels = json_encode(array_values($level_data));
+  $json_levels = json_encode($level_data);
   // Need to construct a new datastream to store these in as JSON.
   $ds = $object->constructDatastream('SERIAL-LEVELS', 'M');
   $ds->label = 'Hierachial Information for the Serial Object';
@@ -182,10 +186,10 @@ function islandora_serial_object_ajax_intermediate_level(&$form, &$form_state) {
  *   An array representing a form in Drupal.
  * @param array $rows
  *   An array of arrays containing:
- *   -level: An integer denoting what level this element is currently at.
- *   -checkbox: An integer denoting whether the checkbox is checked or not.
- *   -type: The string value of the current type value for MODS.
- *   -caption: The current value for the caption. *
+ *   - level: An integer denoting what level this element is currently at.
+ *   - checkbox: An integer denoting whether the checkbox is checked or not.
+ *   - type: The string value of the current type value for MODS.
+ *   - caption: The current value for the caption. *
  */
 function islandora_serial_object_construct_intermediate_levels(&$form, $rows) {
   foreach ($rows as $key => $values) {
