@@ -628,9 +628,9 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
           foreach ($leafs[$values['id']] as $pdf_child) {
             if (isset($stubs[$pdf_child['pid']])) {
               $type = 'stub';
-            } 
+            }
             else {
-              $type = 'pdf' ;
+              $type = 'pdf';
             }
             $json_data[] = array(
               'id' => $pdf_child['pid'],
