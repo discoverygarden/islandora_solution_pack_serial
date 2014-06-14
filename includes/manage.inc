@@ -163,6 +163,7 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
 
     foreach ($form_state['values']['table_wrapper']['islandora_serial_object_intermediates'] as $id => $intermediate) {
       $empty_children_error = FALSE;
+      $empty_element = FALSE;
       if (empty($intermediate['caption']) && empty($intermediate['number'])) {
         if (isset($form_state['islandora_serial_object_intermediates']['intermediates'][$id])) {
           // Need to see if these children are empty as well.
@@ -194,8 +195,11 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
             form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id]['caption'], t('An empty intermediate may not have any populated children!'));
           }
         }
+        else {
+          $empty_element = TRUE;
+        }
       }
-      if (!$empty_children_error && (empty($intermediate['caption']) || empty($intermediate['number']))) {
+      if (!$empty_children_error && !$empty_element && (empty($intermediate['caption']) || empty($intermediate['number']))) {
         $fields_to_check = array(
           'caption',
           'number',
@@ -247,10 +251,12 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
         if (empty($child['caption']) && empty($child['number'])) {
           unset($filtered_children[$parent_id][$id]);
         }
-        // Grab the type from the defined default values. Note that the depth
-        // is always one greater in the default values structure than what is
-        // stored on the child.
-        $filtered_children[$parent_id][$id]['type'] = $default_values[$child['depth'] + 1]['type'];
+        else {
+          // Grab the type from the defined default values. Note that the depth
+          // is always one greater in the default values structure than what is
+          // stored on the child.
+          $filtered_children[$parent_id][$id]['type'] = $default_values[$child['depth'] + 1]['type'];
+        }
       }
     }
     $tree = islandora_serial_object_get_intermediates_as_tree($filtered_children, $serial_id, $ingest);
