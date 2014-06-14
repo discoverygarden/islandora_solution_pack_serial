@@ -54,11 +54,12 @@ function islandora_serial_object_build_intermediates(&$form, &$form_state, $type
   }
   // Add the JS for tableDrag event firing fun!
   $module_path = drupal_get_path('module', 'islandora_serial_object');
-  $form['#attached']['js'] = array(
-    "$module_path/js/islandora_serial_object_tabledrag.js" => array(
-      'group' => JS_LIBRARY,
-    ),
-  );
+
+  // Need to use drupal_add_js as opposed to attaching to the form as
+  // tabledrag's JS is added in the theme layer with a weight of -1. As our
+  // custom tabledrag is defining onDrop functionality the core tabledrag JS
+  // needs to be loaded first.
+  drupal_add_js("$module_path/js/islandora_serial_object_tabledrag.js");
   $form['#attached']['js'][] = array(
     'data' => array('islandoraSerialObjectIntermediateLevels' => $intermediate_levels),
     'type' => 'setting',
@@ -418,6 +419,7 @@ function islandora_serial_object_build_flat_structure_from_tree($tree, $flat_str
       $results[$flat_structure[$branch]['pid']][$branch]['caption'] = $mods_data['caption'];
       $results[$flat_structure[$branch]['pid']][$branch]['number'] = $mods_data['number'];
       $results[$flat_structure[$branch]['pid']][$branch]['default_edit'] = $default_edit;
+      $results[$flat_structure[$branch]['pid']][$branch]['default_type'] = $levels[$depth]['type'];
       islandora_serial_object_build_flat_structure_from_tree($vals, $flat_structure, $results, $parent_pid, $depth + 1);
     }
     else {
@@ -427,6 +429,7 @@ function islandora_serial_object_build_flat_structure_from_tree($tree, $flat_str
       $results[$flat_structure[$vals]['pid']][$vals]['caption'] = $mods_data['caption'];
       $results[$flat_structure[$vals]['pid']][$vals]['number'] = $mods_data['number'];
       $results[$flat_structure[$vals]['pid']][$vals]['default_edit'] = $default_edit;
+      $results[$flat_structure[$vals]['pid']][$vals]['default_type'] = $levels[$depth]['type'];
     }
   }
 }

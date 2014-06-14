@@ -1,7 +1,6 @@
 <collection_policy xmlns="http://www.islandora.ca" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Islandora Serial Object" xsi:schemaLocation="http://www.islandora.ca">
     <content_models>
         <content_model name="Islandora Serial Object Content Model" dsid="DS-COMPOSITE-MODEL" namespace="islandora" pid="islandora:rootSerialCModel"/>
-        <content_model name="Islandora Serial Object Category Content Model" dsid="DS-COMPOSITE-MODEL" namespace="islandora" pid="islandora:intermediateSerialCModelStub"/>
     </content_models>
     <search_terms></search_terms>
     <staging_area></staging_area>
