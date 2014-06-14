@@ -79,6 +79,7 @@ function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object
   // If the MODS datastream isn't created create it.
   $mods_datastream_is_new = FALSE;
   $mods_doc = new DOMDocument();
+  $update_type = FALSE;
   if (!isset($object['MODS'])) {
     $mods_datastream = $object->constructDatastream('MODS', 'M');
     $mods_datastream_is_new = TRUE;
@@ -103,10 +104,24 @@ EOXML;
   else {
     $mods_datastream = $object['MODS'];
     $mods_string = $object['MODS']->content;
+    // The level for the object may have changed and the type may have to be
+    // updated to reflect this.
+    if ($object_info['type'] != $object_info['default_type']) {
+      $update_type = TRUE;
+    }
   }
   $mods_doc->loadXML($mods_string);
   $mods_xpath = new DOMXPath($mods_doc);
   $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
+
+  if ($update_type) {
+    $type_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_DETAIL_XPATH, $object_info['default_type']);
+    $mods_detail_xpath = $mods_xpath->query($type_xpath);
+    if ($mods_detail_xpath->length) {
+      $mods_type = $mods_detail_xpath->item(0);
+      $mods_type->setAttribute('type', $object_info['type']);
+    }
+  }
   $caption_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH, $object_info['type']);
   $mods_caption_xpath = $mods_xpath->query($caption_xpath);
   if ($mods_caption_xpath->length) {
