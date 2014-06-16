@@ -252,6 +252,7 @@ function islandora_serial_object_ingest_section_form($form, &$form_state) {
  *   An array containing the Drupal form state.
  */
 function islandora_serial_object_ingest_section_form_submit($form, &$form_state) {
+  module_load_include('inc', 'islandora_basic_collection', 'includes/ingest.form');
   $obj = islandora_ingest_form_get_object($form_state);
   $obj->label = $form_state['values']['title'];
   // Need to set an actual PID since we are ingesting this object.
