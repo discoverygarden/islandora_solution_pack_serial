@@ -360,3 +360,22 @@ function islandora_serial_object_block_view($delta = '') {
   }
   return $block;
 }
+
+/**
+ * Implements hook_islandora_breadcrumbs_alter().
+ */
+function islandora_serial_object_islandora_breadcrumbs_alter(&$breadcrumbs, $context, $object) {
+  // XXX: Revisit this when a breadcrumb query alter has been implemented in
+  // core.
+  if ($object && array_intersect(array('islandora:sp_pdf', 'islandora:intermediateSerialCModelStub'), $object->models) && $context == 'islandora') {
+    // Get the parent of this object and get its breadcrumbs.
+    $parent = $object->relationships->get(ISLANDORA_RELS_EXT_URI, ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE);
+    if ($parent) {
+      module_load_include('inc', 'islandora', 'includes/breadcrumbs');
+      $parent_rels = reset($parent);
+      $parent_pid = $parent_rels['object']['value'];
+      $parent_object = islandora_object_load($parent_pid);
+      $breadcrumbs = islandora_get_breadcrumbs_recursive($parent_object->id, $parent_object->repository);
+    }
+  }
+}

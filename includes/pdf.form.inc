@@ -25,17 +25,20 @@ function islandora_serial_object_pdf_management_form($form, &$form_state, Abstra
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $query = <<<EOQ
   PREFIX islandora: <$islandora_namespace>
-  SELECT ?pdf ?position ?label
+  SELECT ?pdf ?position ?label ?model
   FROM <#ri>
   WHERE {
     ?pdf islandora:$pdf_parent_predicate <info:fedora/{$object->id}> ;
       islandora:$sequence_predicate ?position ;
-      <fedora-model:label> ?label
+      <fedora-model:label> ?label ;
+      <fedora-model:hasModel> ?model
+      FILTER(sameTerm(?model, <info:fedora/islandora:sp_pdf>) || sameTerm(?model, <info:fedora/islandora:intermediateSerialCModelStub>))
   }
   ORDER BY ASC(?position)
 EOQ;
   $results = $tuque->repository->ri->sparqlQuery($query);
   foreach ($results as $result) {
+    $model = $result['model']['value'];
     $form['pdfs'][$result['pdf']['value']] = array(
       'weight' => array(
         '#default_value' => $result['position']['value'],
@@ -45,6 +48,9 @@ EOQ;
         '#title_display' => 'invisible',
       ),
       'label' => array('#markup' => $result['label']['value']),
+      'type' => array(
+        '#markup' => ($model == 'islandora:sp_pdf') ? t('PDF') : t('Section'),
+      ),
     );
   }
   $form['pdfs']['#tree'] = TRUE;
@@ -253,6 +259,7 @@ function islandora_serial_object_ingest_section_form($form, &$form_state) {
  */
 function islandora_serial_object_ingest_section_form_submit($form, &$form_state) {
   module_load_include('inc', 'islandora_basic_collection', 'includes/ingest.form');
+  $shared_storage = &islandora_ingest_form_get_shared_storage($form_state);
   $obj = islandora_ingest_form_get_object($form_state);
   $obj->label = $form_state['values']['title'];
   // Need to set an actual PID since we are ingesting this object.
@@ -260,4 +267,5 @@ function islandora_serial_object_ingest_section_form_submit($form, &$form_state)
   if ($obj->id == ISLANDORA_BASIC_COLLECTION_FAKE_PID || islandora_get_namespace($obj->id) !== $namespace) {
     $obj->id = $obj->repository->getNextIdentifier($namespace, variable_get('islandora_basic_collection_generate_uuid', FALSE));
   }
+  $obj->models = $shared_storage['models'];
 }
