@@ -123,7 +123,7 @@ function theme_islandora_serial_object_intermediate_levels_table(array $variable
   $output = theme('table', array(
       'header' => array(
         'checkbox' => '',
-        'level' => t('Hierachial Level'),
+        'level' => t('Hierarchical Level'),
         'type' => t('MODS detail[@type] Value'),
         'caption' => t('Default Caption Value'),
       ),

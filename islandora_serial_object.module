@@ -45,7 +45,6 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
   $intermediate_content_model_s->owner = 'fedoraAdmin';
   $intermediate_content_model_s->label = 'Islandora Serial Object Intermediate Category Content Model';
   $intermediate_content_model_s->models = 'fedora-system:ContentModel-3.0';
-  $intermediate_content_model_s->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
 
   // DS-COMPOSITE-MODEL datastream.
   $datastream = $intermediate_content_model->constructDatastream('DS-COMPOSITE-MODEL', 'X');

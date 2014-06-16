@@ -135,8 +135,14 @@ function islandora_serial_object_ingest_pdf_page_callback(AbstractObject $object
 function islandora_serial_object_ingest_section_page_callback(AbstractObject $object) {
   module_load_include('inc', 'islandora', 'includes/ingest.form');
   module_load_include('inc', 'islandora_basic_collection', 'includes/ingest.form');
-  $parent = islandora_object_load('islandora:serial_collection');
-  $config = islandora_basic_collection_get_ingest_configuration($parent);
+  $tuque = islandora_get_tuque_connection();
+  $config = array();
+  // The ISLANDORA_BASIC_COLLECTION_FAKE_PID is needed such that
+  // constructObject() won't call getNextIdentifier(), needlessly.
+  $new_object = $tuque->repository->constructObject(ISLANDORA_BASIC_COLLECTION_FAKE_PID);
+  $config['objects'] = array(
+    $new_object,
+  );
   $config['models'] = array('islandora:intermediateSerialCModelStub');
   $config['islandora_serial_object_intermediate_pdf_parent'] = $object->id;
   return drupal_get_form('islandora_ingest_form', $config);
@@ -218,8 +224,13 @@ function islandora_serial_object_set_pdf_position($pid, $position) {
 /**
  * Ingest step callback to name an object.
  *
+ * @param array $form
+ *   An array representing a form within Drupal.
  * @param array $form_state
  *   An array containing the Drupal form state.
+ *
+ * @return array
+ *   An array containing the renderable Drupal form.
  */
 function islandora_serial_object_ingest_section_form($form, &$form_state) {
   $form = array(
@@ -235,10 +246,17 @@ function islandora_serial_object_ingest_section_form($form, &$form_state) {
 /**
  * Ingest step callback to name an object .
  *
+ * @param array $form
+ *   An array representing a form within Drupal.
  * @param array $form_state
  *   An array containing the Drupal form state.
  */
 function islandora_serial_object_ingest_section_form_submit($form, &$form_state) {
   $obj = islandora_ingest_form_get_object($form_state);
   $obj->label = $form_state['values']['title'];
+  // Need to set an actual PID since we are ingesting this object.
+  $namespace = islandora_get_namespace('islandora:rootSerialCModel');
+  if ($obj->id == ISLANDORA_BASIC_COLLECTION_FAKE_PID || islandora_get_namespace($obj->id) !== $namespace) {
+    $obj->id = $obj->repository->getNextIdentifier($namespace, variable_get('islandora_basic_collection_generate_uuid', FALSE));
+  }
 }

@@ -19,6 +19,14 @@ function islandora_serial_object_create_fields_for_intermediates_form($form, &$f
   $rows = array();
   $form['#tree'] = TRUE;
   $form['intermediate_table'] = array(
+    'title' => array(
+      '#markup' => t('Serial Level Configuration'),
+      '#prefix' => '<h2>',
+      '#suffix' => '</h2>',
+    ),
+    'description' => array(
+      '#markup' => t("This form defines default structural values for each level of the serial object's hierarchy. These values are used when generating the MODS datastream for intermediate objects at the specified level."),
+    ),
     'rows' => array(
       '#theme' => 'islandora_serial_object_intermediate_levels_table',
     ),
@@ -142,7 +150,7 @@ function islandora_serial_object_create_fields_for_intermediates_form_submit($fo
   $json_levels = json_encode($level_data);
   // Need to construct a new datastream to store these in as JSON.
   $ds = $object->constructDatastream('SERIAL-LEVELS', 'M');
-  $ds->label = 'Hierachial Information for the Serial Object';
+  $ds->label = 'Hierarchical Information for the Serial Object';
   $ds->mimetype = 'application/json';
   $ds->setContentFromString($json_levels);
   $object->ingestDatastream($ds);
