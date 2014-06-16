@@ -79,13 +79,18 @@ function theme_islandora_serial_object_pdfs_table(array $variables) {
     $rows[] = array(
       'data' => array(
         drupal_render($form[$id]['label']),
+        drupal_render($form[$id]['type']),
         drupal_render($form[$id]['weight']),
       ),
       'class' => array('draggable'),
     );
   }
   $table_id = 'islandora-serial-object-pdfs-table';
-  $header = array(t('PDF'), t('Weight'));
+  $header = array(
+    t('Label'),
+    t('Type'),
+    t('Weight'),
+  );
   $output = theme(
     'table', array(
       'header' => $header,
