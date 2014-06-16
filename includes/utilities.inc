@@ -672,6 +672,9 @@ function islandora_serial_object_get_tree_view(AbstractObject $object) {
     'data' => array('islandora_serial_object' => $json),
     'type' => 'setting',
   );
+  $form['description'] = array(
+    '#markup' => t('Right click to navigate to the object.'),
+  );
   return $form;
 }
 

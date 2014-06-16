@@ -347,6 +347,7 @@ function islandora_serial_object_block_view($delta = '') {
   $block = array();
   switch ($delta) {
     case 'islandora_serial_object_tree':
+      module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
       if (strpos(current_path(), 'islandora/object') === 0) {
         $object = menu_get_object('islandora_object', 2);
         if (!in_array('islandora:rootSerialCModel', $object->models)) {
