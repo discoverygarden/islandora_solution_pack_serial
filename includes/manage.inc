@@ -104,6 +104,14 @@ function islandora_serial_object_manage_intermediates_form($form, &$form_state, 
   }
   $form['#tree'] = TRUE;
   $form['table_wrapper'] = array(
+    'title' => array(
+      '#markup' => t('Create Intermediate Objects'),
+      '#prefix' => '<h2>',
+      '#suffix' => '</h2>',
+    ),
+    'description' => array(
+      '#markup' => t("Intermediate objects form the structure of the serial. They may be nested and reordered using this form. Note that empty intermediates will not be ingested."),
+    ),
     '#prefix' => '<div id="islandora-serial-object-intermediate-table-wrapper">',
     '#suffix' => '</div>',
     'add_intermediate_object' => array(

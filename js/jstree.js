@@ -20,10 +20,10 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                                 'label': Drupal.t('Go to'),
                                 'action': function (obj) {
                                     if (node.type == 'pdf') {
-                                       window.open(Drupal.settings.basePath + 'islandora/object/' + node.id + '/datastream/OBJ/view/', 'Islandora Object', 'window settings');
+                                       window.location = Drupal.settings.basePath + 'islandora/object/' + node.id + '/datastream/OBJ/view/', 'Islandora Object', 'window settings';
                                     }
                                     else {
-                                       window.open(Drupal.settings.basePath + 'islandora/object/' + node.id, 'Islandora Object', 'window settings');
+                                       window.location = Drupal.settings.basePath + 'islandora/object/' + node.id, 'Islandora Object', 'window settings';
                                     }
                                 }
                             }
