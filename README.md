@@ -19,7 +19,8 @@ Download/clone the [jsTree](https://github.com/vakata/jstree) library to `sites/
 
 ## Configuration
 
-There is a block available to display the tree hierarchy on the root serial object.
+* The "Islandora Serial Object Tree View" block may be enabled to view the full structure of a Serial object.
+* The "View: Islandora Serial Object Intermediate PDF View" block may be enabled if the [Islandora Solr Views](https://github.com/Islandora/islandora_solr_views) module is installed.
 
 ## Troubleshooting/Issues
 
