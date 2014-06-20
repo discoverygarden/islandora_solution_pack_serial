@@ -189,6 +189,14 @@ function islandora_serial_object_menu() {
     'access arguments' => array(2),
     'file' => 'includes/pdf.form.inc',
   );
+  $items['islandora/object/%islandora_object/manage/serial-pdf-management/edit/%islandora_object'] = array(
+    'title' => 'Section Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_serial_object_pdf_management_edit_stub_form', 2, 6),
+    'access callback' => 'islandora_serial_object_pdf_management_edit_stub_access',
+    'access arguments' => array(2, 6),
+    'file' => 'includes/pdf.form.inc',
+  );
   $items['islandora/object/%islandora_object/manage/serial-pdf-management/add'] = array(
     'title' => 'Add a PDF',
     'access callback' => 'islandora_serial_object_pdf_ingest_access',
@@ -236,6 +244,22 @@ function islandora_serial_object_menu() {
 function islandora_serial_object_pdf_management_access(AbstractObject $object) {
   module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
   return in_array('islandora:intermediateCModel', $object->models) && islandora_object_access(ISLANDORA_SERIAL_OBJECT_MANAGEMENT_PERMISSION, $object) && islandora_serial_object_is_leaf($object);
+}
+
+/**
+ * Access callback for the PDF management form for intermediate serial objects.
+ *
+ * @param AbstractObject $parent_object
+ *   An AbstractObject representing the leaf intermediate object within Fedora.
+ *
+ * @param AbstractObject $stub_object
+ *   An AbstractObject representing the leaf intermediate object within Fedora.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function islandora_serial_object_pdf_management_edit_stub_access(AbstractObject $parent_object, AbstractObject $stub_object) {
+  return islandora_serial_object_pdf_management_access($parent_object) && islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $stub_object) && islandora_object_access(ISLANDORA_PURGE, $stub_object);
 }
 
 /**
