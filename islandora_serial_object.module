@@ -192,7 +192,11 @@ function islandora_serial_object_menu() {
   $items['islandora/object/%islandora_object/manage/serial-pdf-management/edit/%islandora_object'] = array(
     'title' => 'Section Edit',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_serial_object_pdf_management_edit_stub_form', 2, 6),
+    'page arguments' => array(
+      'islandora_serial_object_pdf_management_edit_stub_form',
+      2,
+      6,
+    ),
     'access callback' => 'islandora_serial_object_pdf_management_edit_stub_access',
     'access arguments' => array(2, 6),
     'file' => 'includes/pdf.form.inc',
