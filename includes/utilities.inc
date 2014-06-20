@@ -771,14 +771,14 @@ function islandora_serial_object_retrieve_mods_data($id, $type) {
   $mods_caption_xpath = $mods_xpath->query($caption_xpath);
   if ($mods_caption_xpath->length) {
     $mods_caption = $mods_caption_xpath->item(0);
-    $data['caption'] = $mods_caption->nodeValue;
+    $data['caption'] = htmlspecialchars_decode($mods_caption->nodeValue);
   }
 
   $number_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH, $type);
   $mods_number_xpath = $mods_xpath->query($number_xpath);
   if ($mods_number_xpath->length) {
     $mods_number = $mods_number_xpath->item(0);
-    $data['number'] = $mods_number->nodeValue;
+    $data['number'] = htmlspecialchars_decode($mods_number->nodeValue);
   }
   return $data;
 }

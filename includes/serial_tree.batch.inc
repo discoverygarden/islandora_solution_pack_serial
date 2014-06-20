@@ -61,6 +61,7 @@ function islandora_serial_object_serial_batch_op($parent_id, $object_id, $object
 
   $parent_pid = $context['results']['tree_ids_to_pids'][$parent_id];
   // If current object isn't created create it.
+  $object_is_new = FALSE;
   if (islandora_is_valid_pid($object_id)) {
     $object = islandora_object_load($object_id);
     $object_pid = $object_id;
@@ -119,20 +120,20 @@ EOXML;
     $mods_detail_xpath = $mods_xpath->query($type_xpath);
     if ($mods_detail_xpath->length) {
       $mods_type = $mods_detail_xpath->item(0);
-      $mods_type->setAttribute('type', $object_info['type']);
+      $mods_type->setAttribute('type', htmlspecialchars($object_info['type']));
     }
   }
   $caption_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH, $object_info['type']);
   $mods_caption_xpath = $mods_xpath->query($caption_xpath);
   if ($mods_caption_xpath->length) {
     $mods_caption = $mods_caption_xpath->item(0);
-    $mods_caption->nodeValue = $object_info['caption'];
+    $mods_caption->nodeValue = htmlspecialchars($object_info['caption']);
   }
   $number_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH, $object_info['type']);
   $mods_number_xpath = $mods_xpath->query($number_xpath);
   if ($mods_number_xpath->length) {
     $mods_number = $mods_number_xpath->item(0);
-    $mods_number->nodeValue = $object_info['number'];
+    $mods_number->nodeValue = htmlspecialchars($object_info['number']);
   }
   $mods_datastream->content = $mods_doc->saveXML();
 
