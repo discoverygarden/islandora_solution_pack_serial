@@ -103,6 +103,19 @@ function islandora_serial_object_islandora_xml_form_builder_form_associations() 
       'transform' => 'mods_to_dc.xsl',
       'template' => FALSE,
     ),
+    'islandora_serial_object_intermediate_mods_form' => array(
+      'content_model' => 'islandora:intermediateCModel',
+      'form_name' => 'Islandora Serial Object MODS form',
+      'dsid' => 'MODS',
+      'title_field' => array(
+        'titleInfoTab',
+        'titleInfoPanel',
+        'titleInfo',
+        'title',
+      ),
+      'transform' => 'mods_to_dc.xsl',
+      'template' => FALSE,
+    ),
   );
 }
 
