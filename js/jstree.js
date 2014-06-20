@@ -15,18 +15,23 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                 'plugins' : settings.islandora_serial_object.plugins,
                 'contextmenu' : {
                     'items': function (node) {
-                        return {
-                            'Goto': {
-                                'label': Drupal.t('Go to'),
-                                'action': function (obj) {
-                                    if (node.type == 'pdf') {
-                                       window.location = Drupal.settings.basePath + 'islandora/object/' + node.id + '/datastream/OBJ/view/', 'Islandora Object', 'window settings';
-                                    }
-                                    else {
-                                       window.location = Drupal.settings.basePath + 'islandora/object/' + node.id, 'Islandora Object', 'window settings';
+                        if (node.type != 'stub') {
+                            return {
+                                'Goto': {
+                                    'label': Drupal.t('Go to'),
+                                    'action': function (obj) {
+                                        if (node.type == 'pdf') {
+                                           window.location = Drupal.settings.basePath + 'islandora/object/' + node.id + '/datastream/OBJ/view/', 'Islandora Object', 'window settings';
+                                        }
+                                        else {
+                                           window.location = Drupal.settings.basePath + 'islandora/object/' + node.id, 'Islandora Object', 'window settings';
+                                        }
                                     }
                                 }
                             }
+                        }
+                        else {
+                            return {}
                         }
                     }
                 }
@@ -37,6 +42,9 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                        window.location = Drupal.settings.basePath + 'islandora/object/' + selected.node.id + '/datastream/OBJ/view/';
                     }
                 });
+            $('.islandora_serial_object_tree_close_all').click(function() {
+                $('#islandora_serial_object_tree_view').jstree("close_all");
+            });
         }
     };
 })(Drupal.settings.jsTree_jQuery);
