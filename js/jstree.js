@@ -42,7 +42,7 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                        window.location = Drupal.settings.basePath + 'islandora/object/' + selected.node.id + '/datastream/OBJ/view/';
                     }
                 });
-            $('.islandora_serial_object_tree_close_all').bind("click", function() {
+            $('.islandora_serial_object_tree_close_all').click(function() {
                 $('#islandora_serial_object_tree_view').jstree("close_all");
             });
         }
