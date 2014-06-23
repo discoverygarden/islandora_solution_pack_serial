@@ -263,7 +263,7 @@ function islandora_serial_object_pdf_management_access(AbstractObject $object) {
  *   TRUE if the user has access, FALSE otherwise.
  */
 function islandora_serial_object_pdf_management_edit_stub_access(AbstractObject $parent_object, AbstractObject $stub_object) {
-  return islandora_serial_object_pdf_management_access($parent_object) && islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $stub_object) && islandora_object_access(ISLANDORA_PURGE, $stub_object);
+  return islandora_serial_object_pdf_management_access($parent_object) && (islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $stub_object) || islandora_object_access(ISLANDORA_PURGE, $stub_object));
 }
 
 /**

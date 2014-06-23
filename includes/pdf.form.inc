@@ -55,7 +55,7 @@ EOQ;
     if ($model == 'islandora:intermediateSerialCModelStub') {
       $pid = $result['pdf']['value'];
       $stub_object = islandora_object_load($pid);
-      if (islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $stub_object) && islandora_object_access(ISLANDORA_PURGE, $stub_object)) {
+      if (islandora_serial_object_pdf_management_edit_stub_access($object, $stub_object)) {
         $form['pdfs'][$pid]['edit'] = array(
           '#markup' => l(t('edit'), "islandora/object/{$object->id}/manage/serial-pdf-management/edit/$pid"),
         );
@@ -296,19 +296,29 @@ function islandora_serial_object_ingest_section_form_submit($form, &$form_state)
  */
 function islandora_serial_object_pdf_management_edit_stub_form($form, &$form_state, AbstractObject $root_object, AbstractObject $stub_object) {
   if (!isset($form_state['confirm_form'])) {
-    $form['label'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Section Name'),
-      '#required' => TRUE,
-      '#default_value' => $stub_object->label,
-    );
+    $edit_access = islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $stub_object);
+    if ($edit_access) {
+      $form['label'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Section Name'),
+        '#required' => TRUE,
+        '#default_value' => $stub_object->label,
+      );
+    }
+    else {
+      $form['label'] = array(
+        '#markup' => $stub_object->label,
+      );
+    }
     $form['update'] = array(
       '#type' => 'submit',
       '#value' => t('Update'),
+      '#access' => $edit_access,
     );
     $form['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Section'),
+      '#access' => islandora_object_access(ISLANDORA_PURGE, $stub_object),
     );
     // Toss the PIDs in the form state because of potential caching issues.
     $form_state['stub_object_pid'] = $stub_object->id;
