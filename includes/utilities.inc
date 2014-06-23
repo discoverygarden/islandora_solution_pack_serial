@@ -419,7 +419,7 @@ function islandora_serial_object_build_flat_structure_from_tree($tree, $flat_str
       $results[$flat_structure[$branch]['pid']][$branch]['caption'] = $mods_data['caption'];
       $results[$flat_structure[$branch]['pid']][$branch]['number'] = $mods_data['number'];
       $results[$flat_structure[$branch]['pid']][$branch]['default_edit'] = $default_edit;
-      $results[$flat_structure[$branch]['pid']][$branch]['default_type'] = $levels[$depth]['type'];
+      $results[$flat_structure[$branch]['pid']][$branch]['default_type'] = htmlspecialchars($levels[$depth]['type']);
       islandora_serial_object_build_flat_structure_from_tree($vals, $flat_structure, $results, $parent_pid, $depth + 1);
     }
     else {
@@ -429,7 +429,7 @@ function islandora_serial_object_build_flat_structure_from_tree($tree, $flat_str
       $results[$flat_structure[$vals]['pid']][$vals]['caption'] = $mods_data['caption'];
       $results[$flat_structure[$vals]['pid']][$vals]['number'] = $mods_data['number'];
       $results[$flat_structure[$vals]['pid']][$vals]['default_edit'] = $default_edit;
-      $results[$flat_structure[$vals]['pid']][$vals]['default_type'] = $levels[$depth]['type'];
+      $results[$flat_structure[$vals]['pid']][$vals]['default_type'] = htmlspecialchars($levels[$depth]['type']);
     }
   }
 }
@@ -587,8 +587,6 @@ EOQ;
  */
 function islandora_serial_object_get_stub_child_objects() {
   $connection = islandora_get_tuque_connection();
-  $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
-  $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $pdf_child_query = <<<EOQ
 SELECT ?obj ?label FROM <#ri> WHERE {
   ?obj <fedora-model:hasModel> <info:fedora/islandora:intermediateSerialCModelStub> ;
@@ -767,14 +765,14 @@ function islandora_serial_object_retrieve_mods_data($id, $type) {
   $mods_doc->loadXML($mods_string);
   $mods_xpath = new DOMXPath($mods_doc);
   $mods_xpath->registerNamespace('mods', 'http://www.loc.gov/mods/v3');
-  $caption_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH, $type);
+  $caption_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_CAPTION_XPATH, htmlspecialchars($type));
   $mods_caption_xpath = $mods_xpath->query($caption_xpath);
   if ($mods_caption_xpath->length) {
     $mods_caption = $mods_caption_xpath->item(0);
     $data['caption'] = htmlspecialchars_decode($mods_caption->nodeValue);
   }
 
-  $number_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH, $type);
+  $number_xpath = islandora_serial_object_replace_xpath(ISLANDORA_SERIAL_OBJECT_MODS_NUMBER_XPATH, htmlspecialchars($type));
   $mods_number_xpath = $mods_xpath->query($number_xpath);
   if ($mods_number_xpath->length) {
     $mods_number = $mods_number_xpath->item(0);
