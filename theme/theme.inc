@@ -80,6 +80,7 @@ function theme_islandora_serial_object_pdfs_table(array $variables) {
       'data' => array(
         drupal_render($form[$id]['label']),
         drupal_render($form[$id]['type']),
+        isset($form[$id]['edit']) ? drupal_render($form[$id]['edit']) : '',
         drupal_render($form[$id]['weight']),
       ),
       'class' => array('draggable'),
@@ -89,6 +90,7 @@ function theme_islandora_serial_object_pdfs_table(array $variables) {
   $header = array(
     t('Label'),
     t('Type'),
+    t('Operations'),
     t('Weight'),
   );
   $output = theme(

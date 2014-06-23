@@ -52,6 +52,15 @@ EOQ;
         '#markup' => ($model == 'islandora:sp_pdf') ? t('PDF') : t('Section'),
       ),
     );
+    if ($model == 'islandora:intermediateSerialCModelStub') {
+      $pid = $result['pdf']['value'];
+      $stub_object = islandora_object_load($pid);
+      if (islandora_serial_object_pdf_management_edit_stub_access($object, $stub_object)) {
+        $form['pdfs'][$pid]['edit'] = array(
+          '#markup' => l(t('edit'), "islandora/object/{$object->id}/manage/serial-pdf-management/edit/$pid"),
+        );
+      }
+    }
   }
   $form['pdfs']['#tree'] = TRUE;
   $form['pdfs']['#theme'] = 'islandora_serial_object_pdfs_table';
@@ -268,4 +277,103 @@ function islandora_serial_object_ingest_section_form_submit($form, &$form_state)
     $obj->id = $obj->repository->getNextIdentifier($namespace, variable_get('islandora_basic_collection_generate_uuid', FALSE));
   }
   $obj->models = $shared_storage['models'];
+}
+
+/**
+ * The stub edit form.
+ *
+ * @param array $form
+ *   An array representing a form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ * @param AbstractObject $root_object
+ *   An AbstractObject representing the root object.
+ * @param AbstractObject $stub_object
+ *   An AbstractObject representing the stub object.
+ *
+ * @return array
+ *   An array representing the renderable Drupal form.
+ */
+function islandora_serial_object_pdf_management_edit_stub_form($form, &$form_state, AbstractObject $root_object, AbstractObject $stub_object) {
+  if (!isset($form_state['confirm_form'])) {
+    $edit_access = islandora_object_access(ISLANDORA_MANAGE_PROPERTIES, $stub_object);
+    if ($edit_access) {
+      $form['label'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Section Name'),
+        '#required' => TRUE,
+        '#default_value' => $stub_object->label,
+      );
+    }
+    else {
+      $form['label'] = array(
+        '#markup' => $stub_object->label,
+      );
+    }
+    $form['update'] = array(
+      '#type' => 'submit',
+      '#value' => t('Update'),
+      '#access' => $edit_access,
+    );
+    $form['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete Section'),
+      '#access' => islandora_object_access(ISLANDORA_PURGE, $stub_object),
+    );
+    // Toss the PIDs in the form state because of potential caching issues.
+    $form_state['stub_object_pid'] = $stub_object->id;
+    $form_state['root_object_pid'] = $root_object->id;
+  }
+  else {
+    $stub_object = islandora_object_load($form_state['stub_object_pid']);
+    $form['message'] = array(
+      '#type' => 'item',
+      '#markup' => t('Are you sure you want to purge @label?', array(
+        '@label' => $stub_object->label,
+      )),
+    );
+    $form['purge'] = array(
+      '#type' => 'submit',
+      '#value' => t('Confirm'),
+    );
+    $form['cancel'] = array(
+      '#type' => 'submit',
+      '#value' => t('Cancel'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * Submit handler for the the stub edit form.
+ *
+ * @param array $form
+ *   An array representing a form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_pdf_management_edit_stub_form_submit($form, &$form_state) {
+  $last_parent = end($form_state['triggering_element']['#parents']);
+  if ($last_parent == 'update') {
+    $stub_object = islandora_object_load($form_state['stub_object_pid']);
+    if ($stub_object->label != $form_state['values']['label']) {
+      $stub_object->label = $form_state['values']['label'];
+    }
+    drupal_set_message(t('The label has been updated for the section.'));
+    $form_state['redirect'] = "islandora/object/{$form_state['root_object_pid']}/manage/serial-pdf-management";
+  }
+  elseif ($last_parent == 'delete') {
+    $form_state['confirm_form'] = TRUE;
+    $form_state['rebuild'] = TRUE;
+  }
+  elseif ($last_parent == 'cancel') {
+    $form_state['redirect'] = "islandora/object/{$form_state['root_object_pid']}/manage/serial-pdf-management/edit/{$form_state['stub_object_pid']}";
+  }
+  else {
+    $stub_object = islandora_object_load($form_state['stub_object_pid']);
+    $label = $stub_object->label;
+    $stub_object->repository->purgeObject($form_state['stub_object_pid']);
+    $form_state['redirect'] = "islandora/object/{$form_state['root_object_pid']}/manage/serial-pdf-management";
+    drupal_set_message(t('The section @label has been purged.', array('@label' => $label)));
+  }
 }
