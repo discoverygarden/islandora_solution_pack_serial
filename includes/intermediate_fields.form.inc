@@ -112,7 +112,7 @@ function islandora_serial_object_create_fields_for_intermediates_form_validate($
     if (isset($form_state['values']['intermediate_table']['rows'])) {
       foreach ($form_state['values']['intermediate_table']['rows'] as $key => $values) {
         foreach ($values as $value_key => $value) {
-          if ($value_key != 'checkbox' && empty($value)) {
+          if ($value_key != 'checkbox' && trim($value) === '') {
             form_error($form['intermediate_table']['rows'][$key][$value_key], t('The @type field cannot be empty!', array('@type' => $value_key)));
           }
         }

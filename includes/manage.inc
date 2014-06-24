@@ -172,12 +172,12 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
     foreach ($form_state['values']['table_wrapper']['islandora_serial_object_intermediates'] as $id => $intermediate) {
       $empty_children_error = FALSE;
       $empty_element = FALSE;
-      if (empty($intermediate['caption']) && empty($intermediate['number'])) {
+      if (trim($intermediate['caption']) === '' && trim($intermediate['number']) === '') {
         if (isset($form_state['islandora_serial_object_intermediates']['intermediates'][$id])) {
           // Need to see if these children are empty as well.
           $empty_children = FALSE;
           foreach ($form_state['islandora_serial_object_intermediates']['intermediates'][$id] as $vals) {
-            if (!empty($vals['caption']) || !empty($vals['number'])) {
+            if (trim($vals['caption']) !== '' || trim($vals['number']) !== '') {
               $empty_children = TRUE;
               break;
             }
@@ -207,19 +207,19 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
           $empty_element = TRUE;
         }
       }
-      if (!$empty_children_error && !$empty_element && (empty($intermediate['caption']) || empty($intermediate['number']))) {
+      if (!$empty_children_error && !$empty_element && (trim($intermediate['caption']) === '' || trim($intermediate['number']) === '')) {
         $fields_to_check = array(
           'caption',
           'number',
         );
         foreach ($fields_to_check as $field) {
-          if (empty($intermediate[$field])) {
+          if (trim($intermediate[$field]) === '') {
             form_error($form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field], t('The @type field is required!', array('@type' => $field)));
             if (!isset($form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['#attributes']['class'])) {
               $form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['#attributes']['class'] = array('error');
             }
             else {
-              $form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['attributes']['class'][] = 'error';
+              $form['table_wrapper']['islandora_serial_object_intermediates'][$id][$field]['#attributes']['class'][] = 'error';
             }
           }
         }
@@ -256,7 +256,7 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
     $filtered_children = $form_state['islandora_serial_object_intermediates']['intermediates'];
     foreach ($form_state['islandora_serial_object_intermediates']['intermediates'] as $parent_id => $children) {
       foreach ($children as $id => $child) {
-        if (empty($child['caption']) && empty($child['number'])) {
+        if (trim($child['caption']) === '' && trim($child['number']) === '') {
           unset($filtered_children[$parent_id][$id]);
         }
         else {
