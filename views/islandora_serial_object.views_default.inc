@@ -71,6 +71,14 @@ function islandora_serial_object_views_default_views() {
   $handler->display->display_options['fields']['PID']['exclude'] = TRUE;
   $handler->display->display_options['fields']['PID']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['PID']['link_to_object'] = 0;
+  /* Field: Islandora Solr: fgs_label_s */
+  $handler->display->display_options['fields']['fgs_label_s']['id'] = 'fgs_label_s';
+  $handler->display->display_options['fields']['fgs_label_s']['table'] = 'islandora_solr';
+  $handler->display->display_options['fields']['fgs_label_s']['field'] = 'fgs_label_s';
+  $handler->display->display_options['fields']['fgs_label_s']['label'] = '';
+  $handler->display->display_options['fields']['fgs_label_s']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['fgs_label_s']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['fgs_label_s']['link_to_object'] = 0;
   /* Field: Islandora Solr: mods_titleInfo_title_ms */
   $handler->display->display_options['fields']['mods_titleInfo_title_ms']['id'] = 'mods_titleInfo_title_ms';
   $handler->display->display_options['fields']['mods_titleInfo_title_ms']['table'] = 'islandora_solr';
@@ -79,6 +87,7 @@ function islandora_serial_object_views_default_views() {
   $handler->display->display_options['fields']['mods_titleInfo_title_ms']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['mods_titleInfo_title_ms']['alter']['path'] = 'islandora/object/[PID]/datastream/OBJ/view';
   $handler->display->display_options['fields']['mods_titleInfo_title_ms']['alter']['alt'] = 'PDF View';
+  $handler->display->display_options['fields']['mods_titleInfo_title_ms']['empty'] = '[fgs_label_s]';
   $handler->display->display_options['fields']['mods_titleInfo_title_ms']['link_to_object'] = 0;
   /* Field: Islandora Solr: mods_name_corporate_namePart_ms */
   $handler->display->display_options['fields']['mods_name_corporate_namePart_ms']['id'] = 'mods_name_corporate_namePart_ms';
@@ -115,16 +124,29 @@ function islandora_serial_object_views_default_views() {
 $object = islandora_object_load($argument);
 return $object && islandora_serial_object_is_leaf($object) && in_array(\'islandora:intermediateCModel\', $object->models);
   ';
+  $handler->display->display_options['filter_groups']['operator'] = 'OR';
+  $handler->display->display_options['filter_groups']['groups'] = array(
+    1 => 'OR',
+    2 => 'OR',
+  );
   /* Filter criterion: Islandora Solr: RELS_EXT_hasModel_uri_ms */
   $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms']['id'] = 'RELS_EXT_hasModel_uri_ms';
   $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms']['table'] = 'islandora_solr';
   $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms']['field'] = 'RELS_EXT_hasModel_uri_ms';
   $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms']['value'] = 'info:fedora/islandora:sp_pdf';
+  $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms']['group'] = 1;
+  /* Filter criterion: Islandora Solr: RELS_EXT_hasModel_uri_ms */
+  $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms_1']['id'] = 'RELS_EXT_hasModel_uri_ms_1';
+  $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms_1']['table'] = 'islandora_solr';
+  $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms_1']['field'] = 'RELS_EXT_hasModel_uri_ms';
+  $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms_1']['value'] = 'info:fedora/islandora:intermediateSerialCModelStub';
+  $handler->display->display_options['filters']['RELS_EXT_hasModel_uri_ms_1']['group'] = 2;
 
   /* Display: Block */
   $handler = $view->new_display('block', 'Block', 'islandora_serial_object_intermediate_pdf_view');
   $translatables['islandora_serial_object_intermediate_pdf_view'] = array(
     t('Master'),
+    t('PDF Objects'),
     t('more'),
     t('Apply'),
     t('Reset'),
@@ -141,6 +163,7 @@ return $object && islandora_serial_object_is_leaf($object) && in_array(\'islando
     t('No PDFs are currently associated.'),
     t('Title'),
     t('PDF View'),
+    t('[fgs_label_s]'),
     t('Authors'),
     t('RELS_EXT_sequence_position_literal_l'),
     t('All'),
