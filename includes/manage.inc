@@ -256,7 +256,7 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
     $filtered_children = $form_state['islandora_serial_object_intermediates']['intermediates'];
     foreach ($form_state['islandora_serial_object_intermediates']['intermediates'] as $parent_id => $children) {
       foreach ($children as $id => $child) {
-        if (strlen($child['caption']) == 0 && strlen($child['number']) == 0) {
+        if (trim($child['caption']) === '' && trim($child['number']) === '') {
           unset($filtered_children[$parent_id][$id]);
         }
         else {
