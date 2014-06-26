@@ -36,7 +36,7 @@ function islandora_serial_object_islandora_required_objects(IslandoraTuque $conn
   $serial_content_model->ingestDatastream($datastream);
 
   // Intermediate content model.
-  $intermediate_content_model = $connection->repository->constructObject('islandora:intermediateSerialCModel');
+  $intermediate_content_model = $connection->repository->constructObject('islandora:intermediateCModel');
   $intermediate_content_model->owner = 'fedoraAdmin';
   $intermediate_content_model->label = 'Islandora Serial Object Intermediate Content Model';
   $intermediate_content_model->models = 'fedora-system:ContentModel-3.0';
