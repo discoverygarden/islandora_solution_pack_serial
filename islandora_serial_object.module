@@ -233,6 +233,15 @@ function islandora_serial_object_menu() {
     'access arguments' => array(2),
     'file' => 'includes/manage.inc',
   );
+  $items['admin/islandora/solution_pack_config/serial'] = array(
+    'title' => 'Serial Object Solution Pack',
+    'description' => 'Configure settings for the serial object solution pack.',
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('islandora_serial_object_settings_form'),
+    'file' => 'includes/admin.form.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
   return $items;
 }
 
