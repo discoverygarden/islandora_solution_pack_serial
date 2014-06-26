@@ -533,15 +533,19 @@ function islandora_serial_object_get_max_sequence_number($parent_id) {
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
-  $sequence_query = <<<EOQ
-  SELECT ?sequence_number FROM <#ri> WHERE {
-    ?child <$islandora_namespace$pdf_parent_predicate> <info:fedora/{$parent_id}> ;
-           <$islandora_namespace{$sequence_predicate}> ?sequence_number
-  }
-  ORDER BY DESC(?sequence_number)
-  LIMIT 1
+  $sequence_query = <<<'EOQ'
+  select $sequence_number from <#ri> where
+    $child <!parent_predicate> <info:fedora/!pid> and
+    $child <!sequence_predicate> $sequence_number
+  order by $sequence_number desc
+  limit 1
 EOQ;
-  $sequence_number_results = $tuque->repository->ri->sparqlQuery($sequence_query);
+  $formatted_query = format_string($sequence_query, array(
+    '!parent_predicate' => "$islandora_namespace$pdf_parent_predicate",
+    '!pid' => $parent_id,
+    '!sequence_predicate' => "$islandora_namespace$sequence_predicate",
+  ));
+  $sequence_number_results = $tuque->repository->ri->itqlQuery($formatted_query);
   $sequence_number = reset($sequence_number_results);
   return $sequence_number ? $sequence_number['sequence_number']['value'] : 0;
 }
@@ -564,7 +568,7 @@ SELECT ?sequence_number ?obj ?pdf ?pdf_label FROM <#ri> WHERE {
        <fedora-model:label> ?pdf_label ;
   <$islandora_namespace{$sequence_predicate}> ?sequence_number
   }
-  ORDER BY ASC(?sequence_number)
+  ORDER BY ?sequence_number
 EOQ;
   $results = $connection->repository->ri->sparqlQuery($pdf_child_query);
   $leaf_objects = array();

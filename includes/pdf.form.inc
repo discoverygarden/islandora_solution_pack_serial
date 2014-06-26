@@ -34,7 +34,7 @@ function islandora_serial_object_pdf_management_form($form, &$form_state, Abstra
       <fedora-model:hasModel> ?model
       FILTER(sameTerm(?model, <info:fedora/islandora:sp_pdf>) || sameTerm(?model, <info:fedora/islandora:intermediateSerialCModelStub>))
   }
-  ORDER BY ASC(?position)
+  ORDER BY ?position
 EOQ;
   $results = $tuque->repository->ri->sparqlQuery($query);
   foreach ($results as $result) {
