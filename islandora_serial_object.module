@@ -400,12 +400,14 @@ function islandora_serial_object_block_view($delta = '') {
       module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
       if (strpos(current_path(), 'islandora/object') === 0) {
         $object = menu_get_object('islandora_object', 2);
-        if (!in_array('islandora:rootSerialCModel', $object->models)) {
+        if ($object) {
+          if (!in_array('islandora:rootSerialCModel', $object->models)) {
+            break;
+          }
+          $block['subject'] = t('Islandora Serial Object Tree View');
+          $block['content'] = islandora_serial_object_get_tree_view($object);
           break;
         }
-        $block['subject'] = t('Islandora Serial Object Tree View');
-        $block['content'] = islandora_serial_object_get_tree_view($object);
-        break;
       }
   }
   return $block;
