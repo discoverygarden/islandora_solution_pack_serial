@@ -21,6 +21,7 @@
  */
 function islandora_serial_object_manage_intermediates_form($form, &$form_state, $type, AbstractObject $object = NULL) {
   module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
+  form_load_include($form_state, 'inc', 'islandora_serial_object', 'includes/manage');
   if (isset($form_state['triggering_element'])) {
     $last_parent = end($form_state['triggering_element']['#parents']);
     // Need to go through and rebuild the table because AJAX changes do not
@@ -131,6 +132,8 @@ function islandora_serial_object_manage_intermediates_form($form, &$form_state, 
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Update'),
+      '#validate' => array('islandora_serial_object_manage_intermediates_form_validate'),
+      '#submit' => array('islandora_serial_object_manage_intermediates_form_submit'),
     );
   }
   islandora_serial_object_build_intermediates($form['table_wrapper'], $form_state, $type, $object);
@@ -273,4 +276,56 @@ function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form
       islandora_serial_object_serial_batch($tree);
     }
   }
+}
+
+/**
+ * Multi-step form for intermediate crazyness.
+ *
+ * @param array $form
+ *   An array representing the Drupal form.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ * @param string $pid
+ *   The pid of the object we are currently on.
+ *
+ * @return array
+ *   An array representing the form to be rendered.
+ */
+function islandora_serial_object_manage_steps_form($form, &$form_state, $pid) {
+  module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
+
+  $object = islandora_object_load($pid);
+  $children = islandora_serial_object_get_children($object->id);
+  $children_exist = !empty($children);
+  // User needs to define levels before anything else.
+  if (!isset($object['SERIAL-LEVELS'])) {
+    module_load_include('inc', 'islandora_serial_object', 'includes/intermediate_fields.form');
+    $form = islandora_serial_object_create_fields_for_intermediates_form($form, $form_state, 'manage');
+  }
+  // Levels defined but no children and just didn't add levels.
+  elseif (isset($object['SERIAL-LEVELS']) && isset($form_state['islandora_serial_object_created_levels']) && !$children_exist) {
+    $form = islandora_serial_object_manage_intermediates_form($form, $form_state, 'manage', $object);
+  }
+  elseif (isset($object['SERIAL-LEVELS']) && !isset($form_state['islandora_serial_object_created_levels']) && !$children_exist) {
+    // Show levels form for editing.
+    module_load_include('inc', 'islandora_serial_object', 'includes/intermediate_fields.form');
+    $form = islandora_serial_object_create_fields_for_intermediates_form($form, $form_state, 'manage');
+  }
+  // Children exist.
+  else {
+    $form = islandora_serial_object_manage_intermediates_form($form, $form_state, 'manage', $object);
+  }
+  return $form;
+}
+
+/**
+ * Submit handler to rebuild our multi-step edit form.
+ *
+ * @param array $form
+ *   An array representing the Drupal form.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ */
+function islandora_serial_object_manage_steps_rebuild(&$form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
 }

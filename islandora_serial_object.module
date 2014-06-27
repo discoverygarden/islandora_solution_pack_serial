@@ -134,24 +134,26 @@ function islandora_serial_object_islandora_xml_form_builder_forms() {
 /**
  * Implements hook_islandora_ingest_steps().
  */
-function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_steps() {
-  return array(
-    'islandora_serial_object_create_fields' => array(
-      'type' => 'form',
-      'weight' => 9,
-      'module' => 'islandora_serial_object',
-      'form_id' => 'islandora_serial_object_create_fields_for_intermediates_form',
-      'file' => 'includes/intermediate_fields.form.inc',
-    ),
-    'islandora_serial_object' => array(
+function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_steps(&$form_state) {
+  $steps = array();
+  $steps['islandora_serial_object_create_fields'] = array(
+    'type' => 'form',
+    'weight' => 9,
+    'module' => 'islandora_serial_object',
+    'form_id' => 'islandora_serial_object_create_fields_for_intermediates_form',
+    'file' => 'includes/intermediate_fields.form.inc',
+  );
+  if (isset($form_state['islandora_serial_object_intermediate_levels']) && !empty($form_state['islandora_serial_object_intermediate_levels'])) {
+    $steps['islandora_serial_object'] = array(
       'weight' => 10,
       'type' => 'form',
       'form_id' => 'islandora_serial_object_manage_intermediates_form',
       'args' => array('ingest'),
       'module' => 'islandora_serial_object',
       'file' => 'includes/manage.inc',
-    ),
-  );
+    );
+  }
+  return $steps;
 }
 
 /**
@@ -224,14 +226,19 @@ function islandora_serial_object_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
     'page callback' => 'drupal_get_form',
-    'page arguments' => array(
-      'islandora_serial_object_manage_intermediates_form',
-      'manage',
-      2,
-    ),
+    'page arguments' => array('islandora_serial_object_manage_steps_form', 2),
     'access callback' => 'islandora_serial_object_intermediate_management_access',
     'access arguments' => array(2),
     'file' => 'includes/manage.inc',
+  );
+  $items['admin/islandora/solution_pack_config/serial'] = array(
+    'title' => 'Serial Object Solution Pack',
+    'description' => 'Configure settings for the serial object solution pack.',
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('islandora_serial_object_settings_form'),
+    'file' => 'includes/admin.form.inc',
+    'type' => MENU_NORMAL_ITEM,
   );
   return $items;
 }
@@ -391,12 +398,14 @@ function islandora_serial_object_block_view($delta = '') {
       module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
       if (strpos(current_path(), 'islandora/object') === 0) {
         $object = menu_get_object('islandora_object', 2);
-        if (!in_array('islandora:rootSerialCModel', $object->models)) {
+        if ($object) {
+          if (!in_array('islandora:rootSerialCModel', $object->models)) {
+            break;
+          }
+          $block['subject'] = t('Islandora Serial Object Tree View');
+          $block['content'] = islandora_serial_object_get_tree_view($object);
           break;
         }
-        $block['subject'] = t('Islandora Serial Object Tree View');
-        $block['content'] = islandora_serial_object_get_tree_view($object);
-        break;
       }
   }
   return $block;
