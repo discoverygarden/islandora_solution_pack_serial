@@ -20,4 +20,8 @@ function islandora_serial_object_install() {
 function islandora_serial_object_uninstall() {
   module_load_include('inc', 'islandora', 'includes/solution_packs');
   islandora_install_solution_pack('islandora_serial_object', 'uninstall');
+  $vars = array(
+    'islandora_serial_object_display_stubs_pdfs_in_tree',
+  );
+  array_map('variable_del', $vars);
 }
