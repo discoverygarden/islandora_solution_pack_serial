@@ -630,8 +630,14 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
   // Need to get the correct depth and ordering on our existing elements.
   $intermediates = islandora_serial_object_sort_intermediates($intermediates, $object->id);
   $json_data = array();
-  $leafs = islandora_serial_object_get_pdf_child_objects();
-  $stubs = islandora_serial_object_get_stub_child_objects();
+  if (variable_get('islandora_serial_object_display_stubs_pdfs_in_tree', FALSE)) {
+    $leafs = islandora_serial_object_get_pdf_child_objects();
+    $stubs = islandora_serial_object_get_stub_child_objects();
+  }
+  else {
+    $leafs = array();
+    $stubs = array();
+  }
   foreach ($intermediates['intermediates'] as $children) {
     foreach ($children as $values) {
       if (isset($stubs[$values['id']])) {
@@ -646,7 +652,7 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
         'text' => $values['title'],
         'type' => $type,
       );
-      if ($values['leaf']) {
+      if ($values['leaf'] && variable_get('islandora_serial_object_display_stubs_pdfs_in_tree', FALSE)) {
         if (isset($leafs[$values['id']])) {
           foreach ($leafs[$values['id']] as $pdf_child) {
             if (isset($stubs[$pdf_child['pid']])) {
