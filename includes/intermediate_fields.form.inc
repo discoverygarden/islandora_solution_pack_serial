@@ -103,6 +103,8 @@ function islandora_serial_object_create_fields_for_intermediates_form($form, &$f
           'caption' => $level->caption,
         );
       }
+      // Set the existing level so we have a starting point to add to.
+      $form_state['islandora_serial_object_intermediate_level'] = count($levels);
     }
     islandora_serial_object_construct_intermediate_levels($form['intermediate_table']['rows'], $rows);
   }
