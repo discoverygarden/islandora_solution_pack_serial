@@ -241,7 +241,7 @@ function islandora_serial_object_manage_intermediates_form_validate(&$form, &$fo
  *   An array containing the Drupal form state.
  */
 function islandora_serial_object_manage_intermediates_form_submit(&$form, &$form_state) {
-  if (isset($form_state['islandora_serial_object_intermediates'])) {
+  if (isset($form_state['islandora_serial_object_intermediates']) && !empty($form_state['islandora_serial_object_intermediates']['intermediates'])) {
     module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
     module_load_include('inc', 'islandora_serial_object', 'includes/serial_tree.batch');
     if ($form['#form_id'] == 'islandora_ingest_form') {
