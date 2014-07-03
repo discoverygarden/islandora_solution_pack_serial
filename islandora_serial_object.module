@@ -429,3 +429,23 @@ function islandora_serial_object_islandora_breadcrumbs_alter(&$breadcrumbs, $con
     }
   }
 }
+
+/**
+ * Implements hook_islandora_undeleteable_datastreams().
+ */
+function islandora_serial_object_islandora_undeletable_datastreams(array $models) {
+  if (in_array('islandora:rootSerialCModel', $models)) {
+    $object = menu_get_object('islandora_object', 2);
+    if ($object) {
+      $intermediate_children = &drupal_static(__FUNCTION__);
+      if ($intermediate_children === NULL) {
+        module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
+        $intermediate_children = islandora_serial_object_get_children($object->id);
+      }
+      if (!empty($intermediate_children)) {
+        return array('SERIAL-LEVELS');
+      }
+    }
+  }
+  return array();
+}
