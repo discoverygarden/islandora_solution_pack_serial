@@ -21,5 +21,10 @@ function islandora_serial_object_settings_form(array $form, array &$form_state) 
     '#title' => t('Display PDFs and sections in the jsTree view?'),
     '#default_value' => variable_get('islandora_serial_object_display_stubs_pdfs_in_tree', FALSE),
   );
+  $form['islandora_serial_object_autogenerate_intermediate_label'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Autogenerate intermediate object's label from caption and number?"),
+    '#default_value' => variable_get('islandora_serial_object_autogenerate_intermediate_label', FALSE),
+  );
   return system_settings_form($form);
 }
