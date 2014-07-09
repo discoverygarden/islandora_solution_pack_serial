@@ -107,12 +107,7 @@ function islandora_serial_object_islandora_xml_form_builder_form_associations() 
       'content_model' => 'islandora:intermediateCModel',
       'form_name' => 'Islandora Serial Object MODS form',
       'dsid' => 'MODS',
-      'title_field' => array(
-        'titleInfoTab',
-        'titleInfoPanel',
-        'titleInfo',
-        'title',
-      ),
+      'title_field' => NULL,
       'transform' => 'mods_to_dc.xsl',
       'template' => FALSE,
     ),
@@ -446,6 +441,26 @@ function islandora_serial_object_islandora_undeletable_datastreams(array $models
         return array('SERIAL-LEVELS');
       }
     }
+  }
+  return array();
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_derivative().
+ */
+function islandora_serial_object_islandora_intermediateCModel_islandora_derivative() {
+  if (variable_get('islandora_serial_object_autogenerate_intermediate_label', FALSE)) {
+    return array(
+      array(
+        'source_dsid' => 'MODS',
+        'destination_dsid' => NULL,
+        'weight' => '0',
+        'function' => array(
+          'islandora_serial_object_create_intermediate_label',
+        ),
+        'file' => drupal_get_path('module', 'islandora_serial_object') . '/includes/derivatives.inc',
+      ),
+    );
   }
   return array();
 }

@@ -22,6 +22,7 @@ function islandora_serial_object_uninstall() {
   islandora_install_solution_pack('islandora_serial_object', 'uninstall');
   $vars = array(
     'islandora_serial_object_display_stubs_pdfs_in_tree',
+    'islandora_serial_object_autogenerate_intermediate_label',
   );
   array_map('variable_del', $vars);
 }
