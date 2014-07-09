@@ -449,18 +449,17 @@ function islandora_serial_object_islandora_undeletable_datastreams(array $models
  * Implements hook_CMODEL_PID_islandora_derivative().
  */
 function islandora_serial_object_islandora_intermediateCModel_islandora_derivative() {
+  $derivatives = array();
   if (variable_get('islandora_serial_object_autogenerate_intermediate_label', FALSE)) {
-    return array(
-      array(
-        'source_dsid' => 'MODS',
-        'destination_dsid' => NULL,
-        'weight' => '0',
-        'function' => array(
-          'islandora_serial_object_create_intermediate_label',
-        ),
-        'file' => drupal_get_path('module', 'islandora_serial_object') . '/includes/derivatives.inc',
+    $derivatives[] = array(
+      'source_dsid' => 'MODS',
+      'destination_dsid' => NULL,
+      'weight' => '0',
+      'function' => array(
+        'islandora_serial_object_create_intermediate_label',
       ),
+      'file' => drupal_get_path('module', 'islandora_serial_object') . '/includes/derivatives.inc',
     );
   }
-  return array();
+  return $derivatives;
 }

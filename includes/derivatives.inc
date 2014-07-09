@@ -70,23 +70,15 @@ function islandora_serial_object_create_intermediate_label(AbstractObject $objec
 function islandora_serial_object_find_root_levels($pid, $counter = 0) {
   $object = islandora_object_load($pid);
   if ($object) {
-    $relationships = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
-    // If there is no isMemberOf relationship perhaps this is the root.
-    if (empty($relationships)) {
-      if (in_array('islandora:rootSerialCModel', $object->models)) {
-        if (isset($object['SERIAL-LEVELS'])) {
-          // Do shit.
-          $intermediate_levels = json_decode($object['SERIAL-LEVELS']->content, TRUE);
-          return array(
-            'success' => TRUE,
-            'type' => $intermediate_levels[$counter]['type'],
-          );
-        }
-        else {
-          return array(
-            'success' => FALSE,
-            'message' => t('The root serial object did not containing the SERIAL-LEVELS datastream.'),
-          );
+    if (!in_array('islandora:rootSerialCModel', $object->models)) {
+      $relationships = $object->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOf');
+      // If there is no isMemberOf relationship perhaps this is the root.
+      foreach ($relationships as $relationship) {
+        // More traversal upwards.
+        $pid = $relationship['object']['value'];
+        $result = islandora_serial_object_find_root_levels($pid, $counter + 1);
+        if ($result['success']) {
+          return $result;
         }
       }
       return array(
@@ -95,10 +87,19 @@ function islandora_serial_object_find_root_levels($pid, $counter = 0) {
       );
     }
     else {
-      // More traversal upwards.
-      $pid = $relationships[0]['object']['value'];
-      $counter++;
-      return islandora_serial_object_find_root_levels($pid, $counter);
+      if (isset($object['SERIAL-LEVELS'])) {
+        $intermediate_levels = json_decode($object['SERIAL-LEVELS']->content, TRUE);
+        return array(
+          'success' => TRUE,
+          'type' => $intermediate_levels[$counter]['type'],
+        );
+      }
+      else {
+        return array(
+          'success' => FALSE,
+          'message' => t('The root serial object did not containing the SERIAL-LEVELS datastream.'),
+        );
+      }
     }
   }
   return array(
