@@ -682,7 +682,6 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
     ),
     'plugins' => array(
       'types',
-      'contextmenu',
       'ui',
       'state',
     ),
@@ -699,41 +698,44 @@ function islandora_serial_object_get_json_for_tree(AbstractObject $object) {
  *   An array representing the jsTree view to be rendered.
  */
 function islandora_serial_object_get_tree_view(AbstractObject $object) {
-  $module_path = drupal_get_path('module', 'islandora_serial_object');
-  $library_path = libraries_get_path('jstree');
+  $form = array();
   $json = islandora_serial_object_get_json_for_tree($object);
-  $form['serial_object_tree'] = array(
-    '#markup' => '<div id="islandora_serial_object_tree_view"></div>',
-  );
-  $form['#attached']['css'] = array(
-    "$library_path/dist/themes/default/style.min.css",
-  );
-  $form['#attached']['js'] = array(
-    "$module_path/js/jquery-1.9.1.min.js" => array(
-      'group' => JS_LIBRARY,
-    ),
-    "$library_path/dist/jstree.min.js" => array(
-      'group' => JS_LIBRARY,
-    ),
-    "$module_path/js/jstree.js" => array(
-      'group' => JS_LIBRARY,
-    ),
-  );
-  $form['#attached']['js'][] = array(
-    'data' => array('islandora_serial_object' => $json),
-    'type' => 'setting',
-  );
-  $form['collapse_all'] = array(
-    '#type' => 'button',
-    '#value' => t('Collapse all'),
-    '#attributes' => array(
-      'class' => array('islandora_serial_object_tree_close_all'),
-    ),
-  );
-  $form['description'] = array(
-    '#type' => 'item',
-    '#markup' => t('Right click to navigate to the object.'),
-  );
+  if (!empty($json['data'])) {
+    $module_path = drupal_get_path('module', 'islandora_serial_object');
+    $library_path = libraries_get_path('jstree');
+    $form['serial_object_tree'] = array(
+      '#markup' => '<div id="islandora_serial_object_tree_view"></div>',
+    );
+    $form['#attached']['css'] = array(
+      "$library_path/dist/themes/default/style.min.css",
+    );
+    $form['#attached']['js'] = array(
+      "$module_path/js/jquery-1.9.1.min.js" => array(
+        'group' => JS_LIBRARY,
+      ),
+      "$library_path/dist/jstree.min.js" => array(
+        'group' => JS_LIBRARY,
+      ),
+      "$module_path/js/jstree.js" => array(
+        'group' => JS_LIBRARY,
+      ),
+    );
+    $form['#attached']['js'][] = array(
+      'data' => array('islandora_serial_object' => $json),
+      'type' => 'setting',
+    );
+    $form['collapse_all'] = array(
+      '#type' => 'button',
+      '#value' => t('Collapse all'),
+      '#attributes' => array(
+        'class' => array('islandora_serial_object_tree_close_all'),
+      ),
+    );
+    $form['description'] = array(
+      '#type' => 'item',
+      '#markup' => t('Left click to navigate to the object.'),
+    );
+  }
   return $form;
 }
 
