@@ -23,7 +23,7 @@ function islandora_serial_object_settings_form(array $form, array &$form_state) 
   );
   $form['islandora_serial_object_autogenerate_intermediate_label'] = array(
     '#type' => 'checkbox',
-    '#title' => t("Autogenerate intermediate object's label from caption and number?"),
+    '#title' => t("Automatically regenerate intermediate object's label from caption and number when updating its MODS metadata?"),
     '#default_value' => variable_get('islandora_serial_object_autogenerate_intermediate_label', FALSE),
   );
   return system_settings_form($form);
