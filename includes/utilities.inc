@@ -710,7 +710,7 @@ function islandora_serial_object_get_tree_view(AbstractObject $object) {
       "$library_path/dist/themes/default/style.min.css",
     );
     $form['#attached']['js'] = array(
-      "$module_path/js/jquery-1.9.1.min.js" => array(
+      "$library_path/dist/libs/jquery.js" => array(
         'group' => JS_LIBRARY,
       ),
       "$library_path/dist/jstree.min.js" => array(
