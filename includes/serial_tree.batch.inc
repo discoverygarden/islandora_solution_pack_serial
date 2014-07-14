@@ -140,12 +140,13 @@ EOXML;
 
   // Only want to update the label if the object does not have one.
   if (empty($object->label)) {
+    module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
     $label = array(
       'caption' => $object_info['caption'],
       'number' => $object_info['number'],
     );
-    $label = array_filter($label);
-    $object->label = implode(' - ', $label);
+    $label = islandora_serial_object_filter_mods_data($label);
+    $object->label = implode(' ', $label);
   }
   $object->relationships->autoCommit = FALSE;
   $object->relationships->remove(

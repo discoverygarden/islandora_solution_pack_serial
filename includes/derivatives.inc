@@ -24,9 +24,8 @@ function islandora_serial_object_create_intermediate_label(AbstractObject $objec
   if ($levels['success']) {
     module_load_include('inc', 'islandora_serial_object', 'includes/utilities');
     $type = $levels['type'];
-    $mods = array_filter(islandora_serial_object_retrieve_mods_data($object->id, $type));
-    $label = implode(' - ', $mods);
-
+    $mods = islandora_serial_object_filter_mods_data(islandora_serial_object_retrieve_mods_data($object->id, $type));
+    $label = implode(' ', $mods);
     if ($object->label != $label) {
       $object->label = $label;
     }
