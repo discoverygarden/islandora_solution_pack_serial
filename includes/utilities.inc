@@ -792,3 +792,24 @@ function islandora_serial_object_retrieve_mods_data($id, $type) {
   }
   return $data;
 }
+
+/**
+ * Helper function that filters out a source MODS array.
+ *
+ * @param array $mods_array
+ *   The array to be filtered, containing:
+ *   -caption: A string containing the caption value from MODS.
+ *   -number: A string contaning the number value from MODS.
+ *
+ * @return array
+ *   A filtered array.
+ */
+function islandora_serial_object_filter_mods_data($mods_array) {
+  $empty_filter = function ($item) {
+    if ($item === '') {
+      return FALSE;
+    }
+    return TRUE;
+  };
+  return array_filter($mods_array, $empty_filter);
+}
