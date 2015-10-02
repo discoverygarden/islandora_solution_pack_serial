@@ -361,6 +361,7 @@ FROM <#ri>
 WHERE {
   ?object <fedora-model:label> ?label ;
           <$islandora_namespace$sequence_predicate> ?sequence_num ;
+          <fedora-rels-ext:isMemberOf> ?parent ;
           <fedora-rels-ext:isMemberOf>+ <info:fedora/$parent_pid>
 }
 EOQ;
@@ -374,7 +375,7 @@ EOQ;
       'parent' => $result['parent']['value'],
       'label' => $result['label']['value'],
       'weight' => $result['sequence_num']['value'],
-      'leaf' => isset($leafs[$result['object']['value']]) ? TRUE : FALSE,
+      'leaf' => isset($leafs[$result['object']['value']]),
     );
   }
   if ($tree_structure) {
