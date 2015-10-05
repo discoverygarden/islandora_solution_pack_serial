@@ -548,7 +548,26 @@ function islandora_serial_object_get_max_sequence_number($parent_id) {
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
-  $sequence_query = <<<EOQ
+  $replacements = array(
+    '!parent_predicate' => "$islandora_namespace$pdf_parent_predicate",
+    '!pid' => $parent_id,
+    '!sequence_predicate' => "$islandora_namespace$sequence_predicate",
+  );
+  // XXX: Allow iTQL to be used here, just in case.
+  // @see https://github.com/discoverygarden/islandora_solution_pack_serial/pull/36
+  if (variable_get('islandora_risearch_use_itql_for_walking', TRUE)) {
+    $sequence_query = <<<'EOQ'
+select $sequence_number from <#ri> where
+  $child <!parent_predicate> <info:fedora/!pid> and
+  $child <!sequence_predicate> $sequence_number
+order by $sequence_number desc
+limit 1
+EOQ;
+    $formatted_query = format_string($sequence_query, $replacements);
+    $sequence_number_results = $tuque->repository->ri->itqlQuery($formatted_query);
+  }
+  else {
+    $sequence_query = <<<EOQ
 SELECT ?sequence_number
 FROM <#ri>
 WHERE {
@@ -558,12 +577,9 @@ WHERE {
 ORDER BY DESC(?sequence_number)
 LIMIT 1
 EOQ;
-  $formatted_query = format_string($sequence_query, array(
-    '!parent_predicate' => "$islandora_namespace$pdf_parent_predicate",
-    '!pid' => $parent_id,
-    '!sequence_predicate' => "$islandora_namespace$sequence_predicate",
-  ));
-  $sequence_number_results = $tuque->repository->ri->sparqlQuery($formatted_query);
+    $formatted_query = format_string($sequence_query, $replacements);
+    $sequence_number_results = $tuque->repository->ri->sparqlQuery($formatted_query);
+  }
   $sequence_number = reset($sequence_number_results);
   return $sequence_number ? $sequence_number['sequence_number']['value'] : 0;
 }
