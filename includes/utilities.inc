@@ -337,7 +337,7 @@ function islandora_serial_object_get_children($parent_pid, $tree_structure = FAL
   $tuque = islandora_get_tuque_connection();
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
-  if (variable_get('islandora_risearch_use_itql_for_walking', TRUE)) {
+  if (variable_get('islandora_risearch_use_itql_when_necessary', TRUE)) {
     $query = '
       select $object $parent $label $sequence_num from <#ri>
       where (
@@ -555,7 +555,7 @@ function islandora_serial_object_get_max_sequence_number($parent_id) {
   );
   // XXX: Allow iTQL to be used here, just in case.
   // @see https://github.com/discoverygarden/islandora_solution_pack_serial/pull/36
-  if (variable_get('islandora_risearch_use_itql_for_walking', TRUE)) {
+  if (variable_get('islandora_risearch_use_itql_when_necessary', TRUE)) {
     $sequence_query = <<<'EOQ'
 select $sequence_number from <#ri> where
   $child <!parent_predicate> <info:fedora/!pid> and
