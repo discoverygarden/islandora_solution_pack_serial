@@ -337,21 +337,36 @@ function islandora_serial_object_get_children($parent_pid, $tree_structure = FAL
   $tuque = islandora_get_tuque_connection();
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
-  $query = '
-    select $object $parent $label $sequence_num from <#ri>
-    where (
-      $object <fedora-model:label> $label and
-      $object <!namespace!sequence> $sequence_num and
-      walk(
-        $object <fedora-rels-ext:isMemberOf> <info:fedora/' . $parent_pid . '>
-        and $object <fedora-rels-ext:isMemberOf> $parent)
-    )
-  ';
-  $query = format_string($query, array(
-    '!namespace' => $islandora_namespace,
-    '!sequence' => $sequence_predicate,
-  ));
-  $raw_results = $tuque->repository->ri->itqlQuery($query);
+  if (variable_get('islandora_risearch_use_itql_when_necessary', TRUE)) {
+    $query = '
+      select $object $parent $label $sequence_num from <#ri>
+      where (
+        $object <fedora-model:label> $label and
+        $object <!namespace!sequence> $sequence_num and
+        walk(
+          $object <fedora-rels-ext:isMemberOf> <info:fedora/' . $parent_pid . '>
+          and $object <fedora-rels-ext:isMemberOf> $parent)
+      )
+    ';
+    $query = format_string($query, array(
+      '!namespace' => $islandora_namespace,
+      '!sequence' => $sequence_predicate,
+    ));
+    $raw_results = $tuque->repository->ri->itqlQuery($query);
+  }
+  else {
+    $query = <<<EOQ
+SELECT ?object ?parent ?label ?sequence_num
+FROM <#ri>
+WHERE {
+  ?object <fedora-model:label> ?label ;
+          <$islandora_namespace$sequence_predicate> ?sequence_num ;
+          <fedora-rels-ext:isMemberOf> ?parent ;
+          <fedora-rels-ext:isMemberOf>+ <info:fedora/$parent_pid>
+}
+EOQ;
+    $raw_results = $tuque->repository->ri->sparqlQuery($query);
+  }
   $leafs = islandora_serial_object_get_pdf_child_objects();
   $flat_structure = array();
   foreach ($raw_results as $result) {
@@ -360,7 +375,7 @@ function islandora_serial_object_get_children($parent_pid, $tree_structure = FAL
       'parent' => $result['parent']['value'],
       'label' => $result['label']['value'],
       'weight' => $result['sequence_num']['value'],
-      'leaf' => isset($leafs[$result['object']['value']]) ? TRUE : FALSE,
+      'leaf' => isset($leafs[$result['object']['value']]),
     );
   }
   if ($tree_structure) {
@@ -533,19 +548,38 @@ function islandora_serial_object_get_max_sequence_number($parent_id) {
   $sequence_predicate = ISLANDORA_SERIAL_OBJECT_SEQUENCE_PREDICATE;
   $pdf_parent_predicate = ISLANDORA_SERIAL_OBJECT_PDF_PARENT_PREDICATE;
   $islandora_namespace = ISLANDORA_RELS_EXT_URI;
-  $sequence_query = <<<'EOQ'
-  select $sequence_number from <#ri> where
-    $child <!parent_predicate> <info:fedora/!pid> and
-    $child <!sequence_predicate> $sequence_number
-  order by $sequence_number desc
-  limit 1
-EOQ;
-  $formatted_query = format_string($sequence_query, array(
+  $replacements = array(
     '!parent_predicate' => "$islandora_namespace$pdf_parent_predicate",
     '!pid' => $parent_id,
     '!sequence_predicate' => "$islandora_namespace$sequence_predicate",
-  ));
-  $sequence_number_results = $tuque->repository->ri->itqlQuery($formatted_query);
+  );
+  // XXX: Allow iTQL to be used here, just in case.
+  // @see https://github.com/discoverygarden/islandora_solution_pack_serial/pull/36
+  if (variable_get('islandora_risearch_use_itql_when_necessary', TRUE)) {
+    $sequence_query = <<<'EOQ'
+select $sequence_number from <#ri> where
+  $child <!parent_predicate> <info:fedora/!pid> and
+  $child <!sequence_predicate> $sequence_number
+order by $sequence_number desc
+limit 1
+EOQ;
+    $formatted_query = format_string($sequence_query, $replacements);
+    $sequence_number_results = $tuque->repository->ri->itqlQuery($formatted_query);
+  }
+  else {
+    $sequence_query = <<<EOQ
+SELECT ?sequence_number
+FROM <#ri>
+WHERE {
+  ?child <!parent_predicate> <info:fedora/!pid> ;
+         <!sequence_predicate> ?sequence_number .
+}
+ORDER BY DESC(?sequence_number)
+LIMIT 1
+EOQ;
+    $formatted_query = format_string($sequence_query, $replacements);
+    $sequence_number_results = $tuque->repository->ri->sparqlQuery($formatted_query);
+  }
   $sequence_number = reset($sequence_number_results);
   return $sequence_number ? $sequence_number['sequence_number']['value'] : 0;
 }
