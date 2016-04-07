@@ -152,26 +152,6 @@ function islandora_serial_object_islandora_rootSerialCModel_islandora_ingest_ste
 }
 
 /**
- * Implements hook_theme().
- */
-function islandora_serial_object_theme($existing, $type, $theme, $path) {
-  return array(
-    'islandora_serial_object_intermediates_table' => array(
-      'render element' => 'form',
-      'file' => 'theme/theme.inc',
-    ),
-    'islandora_serial_object_pdfs_table' => array(
-      'render element' => 'form',
-      'file' => 'theme/theme.inc',
-    ),
-    'islandora_serial_object_intermediate_levels_table' => array(
-      'render element' => 'form',
-      'file' => 'theme/theme.inc',
-    ),
-  );
-}
-
-/**
  * Implements hook_menu().
  */
 function islandora_serial_object_menu() {
@@ -394,7 +374,7 @@ function islandora_serial_object_block_view($delta = '') {
       if (strpos(current_path(), 'islandora/object') === 0) {
         $object = menu_get_object('islandora_object', 2);
         if ($object) {
-          if (!in_array('islandora:rootSerialCModel', $object->models)) {
+          if (!in_array('islandora:rootSerialCModel', $object->models) || strpos(current_path(),'/metadata') !== false) {
             break;
           }
           $block['subject'] = t('Islandora Serial Object Tree View');
@@ -462,4 +442,48 @@ function islandora_serial_object_islandora_intermediateCModel_islandora_derivati
     );
   }
   return $derivatives;
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_serial_object_islandora_rootSerialCModel_islandora_view_object($object) {
+  $output = theme('islandora_serial_root_page', array('object' => $object));
+  return array('islandora_serial' => $output);
+}
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_serial_object_islandora_intermediateCModel_islandora_view_object($object) {
+  $output = theme('islandora_serial_intermediates_page', array('object' => $object));
+  return array('islandora_serial' => $output);
+}
+/**
+ * Implements hook_theme().
+ */
+function islandora_serial_object_theme($existing, $type, $theme, $path) {
+  return array(
+    'islandora_serial_object_intermediates_table' => array(
+      'render element' => 'form',
+      'file' => 'theme/theme.inc',
+    ),
+    'islandora_serial_object_pdfs_table' => array(
+      'render element' => 'form',
+      'file' => 'theme/theme.inc',
+    ),
+    'islandora_serial_object_intermediate_levels_table' => array(
+      'render element' => 'form',
+      'file' => 'theme/theme.inc',
+    ),
+    'islandora_serial_root_page' => array(
+      'arguments' => array('object' => NULL),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-serial-root-page',
+    ),
+    'islandora_serial_intermediates_page' => array(
+      'arguments' => array('object' => NULL),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/islandora-serial-intermediates-page',
+    ),
+  );
 }
