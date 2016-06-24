@@ -23,9 +23,12 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                     }
                 }
             });
-            /*$('.islandora_serial_object_tree_close_all').click(function() {
+            $('.islandora_serial_object_tree_close_all').click(function() {
                 $('#islandora_serial_object_tree_view').jstree("close_all");
-            });*/
+            });
+            $('.islandora_serial_object_tree_expand_all').click(function() {
+                $('#islandora_serial_object_tree_view').jstree("open_all");
+            });
         }
     };
 })(Drupal.settings.jsTree_jQuery);
