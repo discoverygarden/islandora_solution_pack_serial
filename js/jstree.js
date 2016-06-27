@@ -19,7 +19,7 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                 // in the event parameter, so grab it from selected instead.
                 if (typeof selected.event != 'undefined') {
                     if (selected.event.type == 'click') {
-                        window.location = Drupal.settings.basePath + 'islandora/object/' + selected.node.id;
+                        window.location = Drupal.settings.basePath + Drupal.settings.pathPrefix + 'islandora/object/' + selected.node.id;
                     }
                 }
             });
