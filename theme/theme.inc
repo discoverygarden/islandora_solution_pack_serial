@@ -141,3 +141,53 @@ function theme_islandora_serial_object_intermediate_levels_table(array $variable
   $output .= drupal_render_children($form);
   return $output;
 }
+/**
+ * Preprocess variables for islandora_serial_intermediates_page templates.
+ *
+ * Default template: islandora-serial-intermediates-page.tpl.php.
+ *
+ */
+function template_preprocess_islandora_serial_intermediates_page(array &$variables) {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  module_load_include('inc', 'islandora', 'includes/metadata');
+  module_load_include('inc', 'islandora', 'includes/datastream');
+
+  $object = $variables['object'];
+  $variables['metadata'] = islandora_retrieve_metadata_markup($object);
+  $variables['description'] = islandora_retrieve_description_markup($object);
+  $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
+}
+/**
+ * Processes variables for islandora_serial_intermediates_page templates.
+ *
+ * Default template: islandora-serial-intermediates-page.tpl.php.
+ *
+ */
+function template_process_islandora_serial_intermediates_page(array &$variables) {
+ 
+}
+/**
+ * Preprocess variables for islandora_serial_root_page templates.
+ *
+ * Default template: islandora-serial-root-page.tpl.php.
+ *
+ */
+function template_preprocess_islandora_serial_root_page(array &$variables) {
+  module_load_include('inc', 'islandora', 'includes/solution_packs');
+  module_load_include('inc', 'islandora', 'includes/metadata');
+  module_load_include('inc', 'islandora', 'includes/datastream');
+
+  $object = $variables['object'];
+  $variables['metadata'] = islandora_retrieve_metadata_markup($object);
+  
+  
+}
+/**
+ * Processes variables for islandora_serial_root_page templates.
+ *
+ * Default template: islandora-serial-root-page.tpl.php.
+ *
+ */
+function template_process_islandora_serial_root_page(array &$variables) {
+  
+}

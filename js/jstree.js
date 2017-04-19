@@ -19,12 +19,15 @@ Drupal.settings.jsTree_jQuery = jQuery.noConflict(true);
                 // in the event parameter, so grab it from selected instead.
                 if (typeof selected.event != 'undefined') {
                     if (selected.event.type == 'click') {
-                        window.location = Drupal.settings.basePath + 'islandora/object/' + selected.node.id;
+                        window.location = Drupal.settings.basePath + Drupal.settings.pathPrefix + 'islandora/object/' + selected.node.id;
                     }
                 }
             });
             $('.islandora_serial_object_tree_close_all').click(function() {
                 $('#islandora_serial_object_tree_view').jstree("close_all");
+            });
+            $('.islandora_serial_object_tree_expand_all').click(function() {
+                $('#islandora_serial_object_tree_view').jstree("open_all");
             });
         }
     };
