@@ -29,8 +29,8 @@ Download/clone the [jsTree](https://github.com/vakata/jstree) library to `sites/
 * To create a top-level container object (e.g. a journal), ingest an object with the Serial Object content model.
 * Under Serial Level Configuration, set up the structure of your serial. (e.g. Level 1 might use the MODS detail type "volume", and the label "Volume". Level 2 might be "issue" and "Issue".)
 * After clicking Next, the "Create Intermediate Children" screen comes up. Here you can add levels (e.g. volumes and issues), which will act as containers for your PDFs. 
- * Click "Add Another" to create a Level 1 container. It is automatically assigned the Level 1 label. 
- * Click "Add Another", and a second Level 1 container will appear. You can drag it to the right to make it a Level 2 container. The label will change.
+   * Click "Add Another" to create a Level 1 container. It is automatically assigned the Level 1 label. 
+   * Click "Add Another", and a second Level 1 container will appear. You can drag it to the right to make it a Level 2 container. The label will change.
 * To ingest a PDF under a given level, click on that level in the tree, and click Manage. Then click PDF Manageement, and add PDFs or sections.
 
 ## Troubleshooting/Issues
