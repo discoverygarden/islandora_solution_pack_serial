@@ -463,3 +463,19 @@ function islandora_serial_object_islandora_intermediateCModel_islandora_derivati
   }
   return $derivatives;
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function islandora_serial_object_form_islandora_ingest_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form_state['islandora']['shared_storage']['islandora_serial_object_intermediate_pdf_parent'])) {
+    module_load_include('inc', 'islandora', 'includes/utilities');
+    $parent_intermediate_pid = $form_state['islandora']['shared_storage']['islandora_serial_object_intermediate_pdf_parent'];
+    $namespace = islandora_get_namespace($parent_intermediate_pid);
+    $object = islandora_ingest_form_get_object($form_state);
+
+    if (!strpos($object->id, $namespace)) {
+      $object->id = $object->repository->getNextIdentifier($namespace);
+    }
+  }
+}
