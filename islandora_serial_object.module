@@ -465,17 +465,17 @@ function islandora_serial_object_islandora_intermediateCModel_islandora_derivati
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_cmodel_pid_islandora_ingest_steps_alter().
  */
-function islandora_serial_object_form_islandora_ingest_form_alter(&$form, &$form_state, $form_id) {
-  if (isset($form_state['islandora']['shared_storage']['islandora_serial_object_intermediate_pdf_parent'])) {
-    module_load_include('inc', 'islandora', 'includes/utilities');
-    $parent_intermediate_pid = $form_state['islandora']['shared_storage']['islandora_serial_object_intermediate_pdf_parent'];
-    $namespace = islandora_get_namespace($parent_intermediate_pid);
-    $object = islandora_ingest_form_get_object($form_state);
-
-    if (!strpos($object->id, $namespace)) {
-      $object->id = $object->repository->getNextIdentifier($namespace);
-    }
-  }
+function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps_alter(&$steps, &$form_state) {
+  $steps['islandora_serial_object_update_namespace'] = array(
+    'type' => 'callback',
+    'do_function' => array(
+      'function' => 'islandora_serial_object_update_namespace',
+      'args' => array($form_state),
+    ),
+    'weight' => -49,
+    'module' => 'islandora_serial_object',
+    'file' => 'includes/utilities.inc',
+  );
 }
