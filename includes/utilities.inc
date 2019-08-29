@@ -847,3 +847,21 @@ function islandora_serial_object_filter_mods_data($mods_array) {
   };
   return array_filter($mods_array, $empty_filter);
 }
+
+/**
+ * Helper function that matches the PDF's PID to the intermediate parent.
+ *
+ * @param array $form_state
+ *   The current ingest form.
+ */
+function islandora_serial_object_update_namespace(&$form_state) {
+  if (isset($form_state['islandora']['shared_storage']['islandora_serial_object_intermediate_pdf_parent'])) {
+    module_load_include('inc', 'islandora', 'includes/utilities');
+    $parent_intermediate_pid = $form_state['islandora']['shared_storage']['islandora_serial_object_intermediate_pdf_parent'];
+    $namespace = islandora_get_namespace($parent_intermediate_pid);
+    $object = islandora_ingest_form_get_object($form_state);
+    if (!strpos($object->id, $namespace)) {
+      $object->id = $object->repository->getNextIdentifier($namespace);
+    }
+  }
+}

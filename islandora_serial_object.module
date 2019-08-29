@@ -463,3 +463,19 @@ function islandora_serial_object_islandora_intermediateCModel_islandora_derivati
   }
   return $derivatives;
 }
+
+/**
+ * Implements hook_cmodel_pid_islandora_ingest_steps_alter().
+ */
+function islandora_serial_object_islandora_sp_pdf_islandora_ingest_steps_alter(&$steps, &$form_state) {
+  $steps['islandora_serial_object_update_namespace'] = array(
+    'type' => 'callback',
+    'do_function' => array(
+      'function' => 'islandora_serial_object_update_namespace',
+      'args' => array($form_state),
+    ),
+    'weight' => -49,
+    'module' => 'islandora_serial_object',
+    'file' => 'includes/utilities.inc',
+  );
+}
