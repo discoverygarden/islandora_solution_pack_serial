@@ -200,6 +200,7 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id,
       $form[$child['id']] += array(
         'caption' => array(
           '#type' => 'textfield',
+          '#maxlength' => 500,
           '#default_value' => isset($child['caption']) ? $child['caption'] : $intermediate_levels[$depth + 1]['caption'],
           '#attributes' => array(
             'class' => array('islandora-serial-object-caption'),
@@ -207,6 +208,7 @@ function islandora_serial_object_construct_markup(&$form, $children, $parent_id,
         ),
         'number' => array(
           '#type' => 'textfield',
+          '#maxlength' => 500,
           '#default_value' => isset($child['number']) ? $child['number'] : FALSE,
         ),
       );
